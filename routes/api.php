@@ -15,15 +15,15 @@ $api->version('v1', function (Router $api) {
 
         $api->post('logout', 'App\\Api\\V1\\Controllers\\LogoutController@logout');
         $api->post('refresh', 'App\\Api\\V1\\Controllers\\RefreshController@refresh');
-        $api->get('me', 'App\\Api\\V1\\Controllers\\UserController@me');
     });
 
-    $api->group(['middleware' => 'jwt.auth'], function(Router $api) {
-        $api->get('protected', function() {
-            return response()->json([
-                'message' => 'Access to protected resources granted! You are seeing this text as you provided the token correctly.'
-            ]);
-        });
+    $api->group(['prefix'=>'admin/user','middleware' => ['jwt.auth','auth.role:admin']], function(Router $api) {
+        $api->get('list', 'App\\Api\\V1\\Controllers\\UserController@allUsers');
+    });
+
+
+    $api->group(['prefix' => 'user', 'middleware' => 'jwt.auth'], function (Router $api) {
+        $api->get('me', 'App\\Api\\V1\\Controllers\\UserController@me');
 
         $api->get('refresh', [
             'middleware' => 'jwt.refresh',

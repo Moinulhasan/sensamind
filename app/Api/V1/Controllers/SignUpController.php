@@ -29,6 +29,7 @@ class SignUpController extends Controller
         }
 
         if(!Config::get('boilerplate.sign_up.release_token')) {
+
             return response()->json([
                 'success' => true,
                 'message' => 'Account created successfully.Verify email to start using the app'

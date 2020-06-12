@@ -2,6 +2,7 @@
 
 namespace App\Api\V1\Controllers;
 
+use App\User;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Tymon\JWTAuth\JWTAuth;
 use App\Http\Controllers\Controller;
@@ -30,5 +31,14 @@ class UserController extends Controller
     public function me()
     {
         return response()->json(Auth::guard()->user());
+    }
+    /**
+     * Get Users list
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function allUsers()
+    {
+        return response()->json(User::all());
     }
 }

@@ -27,7 +27,6 @@ class LoginController extends Controller
             $token = Auth::guard()->attempt($credentials);
 
             if(!$token) {
-                $this->incrementLoginAttempts($request);
                 return response()
                     ->json([
                         'success' => false,
