@@ -13,21 +13,36 @@ class SignUpController extends Controller
 {
     public function signUp(SignUpRequest $request, JWTAuth $JWTAuth)
     {
+        if($this->getUserByEmail($request->email)){
+            return response()->json([
+                'success' => false,
+                'error' => array('message'=>'Email address already in use.')
+            ],422);
+        }
+
         $user = new User($request->all());
         if(!$user->save()) {
-            throw new HttpException(500);
+            return response()->json([
+                'success' => false,
+                'error' => array('message'=>'Couldn\'t create user. Try again')
+            ], 422);
         }
 
         if(!Config::get('boilerplate.sign_up.release_token')) {
             return response()->json([
-                'status' => 'ok'
+                'success' => true,
+                'message' => 'Account created successfully.Verify email to start using the app'
             ], 201);
         }
 
         $token = $JWTAuth->fromUser($user);
         return response()->json([
-            'status' => 'ok',
+            'success' => true,
             'token' => $token
         ], 201);
+    }
+
+    private function getUserByEmail($email){
+        return User::where('email',$email)->first();
     }
 }

@@ -27,17 +27,27 @@ class LoginController extends Controller
             $token = Auth::guard()->attempt($credentials);
 
             if(!$token) {
-                throw new AccessDeniedHttpException();
+                $this->incrementLoginAttempts($request);
+                return response()
+                    ->json([
+                        'success' => false,
+                        'error' => array('message'=>'Invalid credentials. Try again')
+                    ],401);
             }
 
         } catch (JWTException $e) {
-            throw new HttpException(500);
+            return response()
+                ->json([
+                    'success' => false,
+                    'error' => array('message'=>'Something went wrong. Try again')
+                ],500);
         }
 
         return response()
             ->json([
-                'status' => 'ok',
+                'success' => true,
                 'token' => $token,
+                'user' => Auth::guard()->user(),
                 'expires_in' => Auth::guard()->factory()->getTTL() * 60
             ]);
     }

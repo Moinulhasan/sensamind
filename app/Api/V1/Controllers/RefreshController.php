@@ -22,7 +22,7 @@ class RefreshController extends Controller
         $token = Auth::guard()->refresh();
 
         return response()->json([
-            'status' => 'ok',
+            'success' => true,
             'token' => $token,
             'expires_in' => Auth::guard()->factory()->getTTL() * 60
         ]);

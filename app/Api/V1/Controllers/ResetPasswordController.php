@@ -19,21 +19,41 @@ class ResetPasswordController extends Controller
                 $this->reset($user, $password);
             }
         );
+        $errorMessage = null;
+        switch ($response){
+            case Password::PASSWORD_RESET:
+                $errorMessage = null;
+                break;
+            case Password::INVALID_USER:
+                $errorMessage = 'Invalid user detail. User not found';
+                break;
+            case Password::INVALID_TOKEN:
+                $errorMessage = "Password reset link expired";
+                break;
+            case Password::INVALID_PASSWORD:
+                $errorMessage = "Invalid password. Try different password";
+                break;
+        }
 
-        if($response !== Password::PASSWORD_RESET) {
-            throw new HttpException(500);
+        if($errorMessage) {
+            return response()->json([
+                'success' => false,
+                'message' => $errorMessage,
+                'error' => $response
+            ],422);
         }
 
         if(!Config::get('boilerplate.reset_password.release_token')) {
             return response()->json([
-                'status' => 'ok',
+                'success' => true,
+                'message' => 'Password changed successfully'
             ]);
         }
 
         $user = User::where('email', '=', $request->get('email'))->first();
 
         return response()->json([
-            'status' => 'ok',
+            'success' => true,
             'token' => $JWTAuth->fromUser($user)
         ]);
     }

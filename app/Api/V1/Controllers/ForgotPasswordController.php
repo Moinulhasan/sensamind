@@ -16,18 +16,25 @@ class ForgotPasswordController extends Controller
         $user = User::where('email', '=', $request->get('email'))->first();
 
         if(!$user) {
-            throw new NotFoundHttpException();
+            return response()->json([
+                'success' => false,
+                'error' => array('message' =>'Email address not found in our system. Check email id and try again')
+            ], 404);
         }
 
         $broker = $this->getPasswordBroker();
         $sendingResponse = $broker->sendResetLink($request->only('email'));
 
         if($sendingResponse !== Password::RESET_LINK_SENT) {
-            throw new HttpException(500);
+            return response()->json([
+                'success' => false,
+                'message' => 'Couldn\'t send password reset link. Kindly try after sometime'
+            ], 501);
         }
 
         return response()->json([
-            'status' => 'ok'
+            'success' => true,
+            'message' => 'Reset instruction email sent successfully'
         ], 200);
     }
 
