@@ -39,7 +39,7 @@ class ResetPasswordController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $errorMessage,
-                'error' => $response
+                'error' => array('message'=>$errorMessage)
             ],422);
         }
 
@@ -77,7 +77,7 @@ class ResetPasswordController extends Controller
     protected function credentials(ResetPasswordRequest $request)
     {
         return $request->only(
-            'email', 'password', 'password_confirmation', 'token'
+            'password', 'password_confirmation', 'token'
         );
     }
 

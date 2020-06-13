@@ -41,12 +41,21 @@ class LoginController extends Controller
                     'error' => array('message'=>'Something went wrong. Try again')
                 ],500);
         }
+        $user = Auth::guard()->user();
+
+        if($user->is_verified == 0){
+            return response()
+                ->json([
+                    'success' => false,
+                    'error' => array('message'=>'Please verify your account and Try again')
+                ],401);
+        }
 
         return response()
             ->json([
                 'success' => true,
                 'token' => $token,
-                'user' => Auth::guard()->user(),
+                'user' => $user,
                 'expires_in' => Auth::guard()->factory()->getTTL() * 60
             ]);
     }

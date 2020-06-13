@@ -49,6 +49,19 @@ return [
             'email' => 'required|email',
             'password' => 'required|confirmed'
         ]
+    ],
+
+    // these options are related to the account verification procedure
+    'verify_account' => [
+
+        // this option must be set to true if you want to release a token
+        // when user successfully verifies the account
+        'release_token' => env('PASSWORD_RESET_RELEASE_TOKEN', false),
+
+        // here you can specify some validation rules for your password recovery procedure
+        'validation_rules' => [
+            'verification_code' => 'required',
+        ]
     ]
 
 ];
