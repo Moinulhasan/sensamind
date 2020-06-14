@@ -5,11 +5,11 @@ namespace App\Api\V1\Requests;
 use Config;
 use Dingo\Api\Http\FormRequest;
 
-class UpdateLabelRequest extends FormRequest
+class SpecificResourceRequest extends FormRequest
 {
     public function rules()
     {
-        return Config::get('boilerplate.update_label.validation_rules');
+        return Config::get('boilerplate.by_id.validation_rules');
     }
 
     public function authorize()

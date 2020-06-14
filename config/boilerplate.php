@@ -94,7 +94,7 @@ return [
         ]
     ],
 
-    'update_label' => [
+    'by_id' => [
         'validation_rules' => [
             'id' => 'required',
         ]

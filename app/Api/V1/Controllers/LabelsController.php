@@ -3,7 +3,7 @@
 namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\CreateLabelRequest;
-use App\Api\V1\Requests\UpdateLabelRequest;
+use App\Api\V1\Requests\SpecificResourceRequest;
 use App\Labels;
 use App\Http\Controllers\Controller;
 
@@ -28,7 +28,8 @@ class LabelsController extends Controller
      *
      * Create label
      *
-     *  @return \Illuminate\Http\JsonResponse
+     * @param CreateLabelRequest $request
+     * @return \Illuminate\Http\JsonResponse
      */
 
     public function createLabel(CreateLabelRequest $request)
@@ -50,13 +51,14 @@ class LabelsController extends Controller
      *
      * Update Label details
      *
-     *  @return \Illuminate\Http\JsonResponse
+     * @param SpecificResourceRequest $request
+     * @return \Illuminate\Http\JsonResponse
      */
-    public function updateLabel(UpdateLabelRequest $request)
+    public function updateLabel(SpecificResourceRequest $request)
     {
         $params = $request->only('title','button1','button2','cause1','cause2','cause3','cause4','cause5');
         $label = Labels::find($request->id);
-        
+
         if(!$label){
             return response()->json([
                 'success' => false,
@@ -78,5 +80,4 @@ class LabelsController extends Controller
             'error' => array('message'=>'Couldn\'t update label.Try again')
         ],404);
     }
-
 }

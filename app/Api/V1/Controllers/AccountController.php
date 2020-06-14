@@ -5,10 +5,8 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\VerifyAccountRequest;
 use App\Http\Controllers\Controller;
 use App\UserVerification;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\User;
-use Illuminate\Support\Facades\Mail;
 use Tymon\JWTAuth\JWTAuth;
 
 class AccountController extends Controller
@@ -85,4 +83,5 @@ class AccountController extends Controller
             'error' => array('message' => 'Verification code is invalid.')],403
         );
     }
+
 }

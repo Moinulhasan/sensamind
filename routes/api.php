@@ -33,6 +33,7 @@ $api->version('v1', function (Router $api) {
 
     $api->group(['prefix' => 'user', 'middleware' => 'jwt.auth'], function (Router $api) {
         $api->get('me', 'App\\Api\\V1\\Controllers\\UserController@me');
+        $api->get('get-statistics', 'App\\Api\\V1\\Controllers\\UserController@getMyStatistics');
 
         $api->get('refresh', [
             'middleware' => 'jwt.refresh',
