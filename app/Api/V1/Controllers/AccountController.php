@@ -8,9 +8,10 @@ use App\UserVerification;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\User;
+use Illuminate\Support\Facades\Mail;
 use Tymon\JWTAuth\JWTAuth;
 
-class VerifyAccountController extends Controller
+class AccountController extends Controller
 {
     public function verifyAccount(VerifyAccountRequest $request, JWTAuth $JWTAuth)
     {
@@ -50,5 +51,38 @@ class VerifyAccountController extends Controller
                 'error' => array('message' => 'Verification code is invalid.')],403
         );
 
+    }
+
+    public function unlockAccount(VerifyAccountRequest $request, JWTAuth $JWTAuth)
+    {
+        $verification_code = $request->verification_code;
+        $check = User::where('lock_out_code', $verification_code)->first();
+        $maxLoginAttempts = config('auth.max_login_failures');
+
+        if (!is_null($check)) {
+            $user = User::find($check->id);
+
+            if ($user->failed_logins < $maxLoginAttempts ) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Account already in normal state.'
+                ]);
+            }
+
+            $user->failed_logins = 0;
+            $user->lock_out_code = null;
+
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'You have successfully unlocked your account.'
+            ],200);
+        }
+
+        return response()->json([
+            'success' => false,
+            'error' => array('message' => 'Verification code is invalid.')],403
+        );
     }
 }

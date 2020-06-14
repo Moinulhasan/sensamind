@@ -27,7 +27,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token','created_at','updated_at','email_verified_at','locked','is_verified'
+        'password', 'remember_token','created_at','updated_at','email_verified_at','failed_logins','is_verified','lock_out_code'
     ];
 
     /**
@@ -72,4 +72,12 @@ class User extends Authenticatable implements JWTSubject
         $this->notify(new PasswordReset($token));
     }
 
+    public function evolutions()
+    {
+        return $this->hasOne(Evolutions::class);
+    }
+    public function clicks()
+    {
+        return $this->hasMany(UserClicks::class);
+    }
 }

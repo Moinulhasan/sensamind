@@ -62,6 +62,16 @@ return [
         'validation_rules' => [
             'verification_code' => 'required',
         ]
+    ],
+
+    'clicks' => [
+        'validation_rules' => [
+            'clicks' => 'required|array',
+            'current_set.*' => 'required|numeric',
+            'button.*' => 'required|numeric|min:1|max:2',
+            'cause.*' => 'required|numeric|min:1|max:5',
+            'clicked_at.*' => 'required|date'
+        ]
     ]
 
 ];

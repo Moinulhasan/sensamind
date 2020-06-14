@@ -99,4 +99,5 @@ return [
         ],
     ],
 
+    'max_login_failures' => env('MAX_LOGIN_ATTEMPTS',3),
 ];
