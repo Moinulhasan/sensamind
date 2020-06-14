@@ -80,4 +80,8 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(UserClicks::class);
     }
+    public function scopeGetClicksBetween($startDate,$endDate)
+    {
+        return $this->whereBetween('clicked_at', [$startDate,$endDate]);
+    }
 }

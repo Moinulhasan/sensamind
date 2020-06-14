@@ -72,6 +72,32 @@ return [
             'cause.*' => 'required|numeric|min:1|max:5',
             'clicked_at.*' => 'required|date'
         ]
+    ],
+
+    'get_user_clicks' => [
+        'validation_rules' => [
+            'start_date' => 'date|required_with:end_date',
+            'end_date' => 'date|required_with:start_date'
+        ]
+    ],
+
+    'create_label' => [
+        'validation_rules' => [
+            'title' => 'required',
+            'button1' => 'required',
+            'button2' => 'required',
+            'cause1' => 'required',
+            'cause2' => 'required',
+            'cause3' => 'required',
+            'cause4' => 'required',
+            'cause5' => 'required',
+        ]
+    ],
+
+    'update_label' => [
+        'validation_rules' => [
+            'id' => 'required',
+        ]
     ]
 
 ];

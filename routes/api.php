@@ -21,10 +21,14 @@ $api->version('v1', function (Router $api) {
 
     $api->group(['prefix'=>'admin/user','middleware' => ['jwt.auth','auth.role:admin']], function(Router $api) {
         $api->get('list', 'App\\Api\\V1\\Controllers\\UserController@allUsers');
+        $api->get('labels', 'App\\Api\\V1\\Controllers\\LabelsController@getLabels');
+        $api->post('labels', 'App\\Api\\V1\\Controllers\\LabelsController@createLabel');
+        $api->put('labels', 'App\\Api\\V1\\Controllers\\LabelsController@updateLabel');
     });
 
     $api->group(['prefix' => 'user', 'middleware' => ['jwt.auth','auth.role:user']], function (Router $api) {
         $api->post('save-click', 'App\\Api\\V1\\Controllers\\UserController@setClicks');
+        $api->get('get-clicks', 'App\\Api\\V1\\Controllers\\UserController@getClicks');
     });
 
     $api->group(['prefix' => 'user', 'middleware' => 'jwt.auth'], function (Router $api) {
