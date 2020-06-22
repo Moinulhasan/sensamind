@@ -71,7 +71,7 @@ class SignUpController extends Controller
         $baseUrl = env('BASE_APP_URL', 'http://localhost:8000');
         $email = $user->email;
         $name = $user->name;
-        $actionUrl = $baseUrl . '/verify/' . $token;
+        $actionUrl = $baseUrl . '/auth/verify-account/' . $token;
         $details = ['name' => $name, 'actionUrl' => $actionUrl];
         Mail::to($email)->send(new VerifyEmail($details));
     }

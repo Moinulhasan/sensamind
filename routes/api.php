@@ -19,27 +19,29 @@ $api->version('v1', function (Router $api) {
         $api->post('unlock-account', 'App\\Api\\V1\\Controllers\\AccountController@unlockAccount');
     });
 
-    $api->group(['prefix'=>'admin/user','middleware' => ['jwt.auth','auth.role:admin']], function(Router $api) {
-        $api->get('list', 'App\\Api\\V1\\Controllers\\UserController@allUsers');
+    $api->group(['prefix'=>'admin','middleware' => ['jwt.auth','auth.role:admin']], function(Router $api) {
+        $api->get('user/list', 'App\\Api\\V1\\Controllers\\UserController@allUsers');
         $api->get('labels', 'App\\Api\\V1\\Controllers\\LabelsController@getLabels');
         $api->post('labels', 'App\\Api\\V1\\Controllers\\LabelsController@createLabel');
         $api->put('labels', 'App\\Api\\V1\\Controllers\\LabelsController@updateLabel');
     });
 
     $api->group(['prefix' => 'user', 'middleware' => ['jwt.auth','auth.role:user']], function (Router $api) {
-        $api->post('save-click', 'App\\Api\\V1\\Controllers\\UserController@setClicks');
-        $api->get('get-clicks', 'App\\Api\\V1\\Controllers\\UserController@getClicks');
+        $api->post('click', 'App\\Api\\V1\\Controllers\\UserController@setClicks');
     });
 
     $api->group(['prefix' => 'user', 'middleware' => 'jwt.auth'], function (Router $api) {
         $api->get('me', 'App\\Api\\V1\\Controllers\\UserController@me');
-        $api->get('get-statistics', 'App\\Api\\V1\\Controllers\\UserController@getMyStatistics');
+        $api->get('clicks', 'App\\Api\\V1\\Controllers\\UserController@getClicks');
+        $api->get('statistics', 'App\\Api\\V1\\Controllers\\UserController@getMyStatistics');
+        $api->put('/update', 'App\\Api\\V1\\Controllers\\UserController@updateUserDetails');
 
         $api->get('refresh', [
             'middleware' => 'jwt.refresh',
             function() {
                 return response()->json([
-                    'message' => 'By accessing this endpoint, you can refresh your access token at each request. Check out this response headers!'
+                    'success' => true,
+                    'message' => 'Token Refresh'
                 ]);
             }
         ]);

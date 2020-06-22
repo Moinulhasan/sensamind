@@ -51,7 +51,7 @@ class PasswordReset extends Notification
         return (new MailMessage)
                     ->subject('Password Reset')
                     ->line('You are receiving this email because we received a password reset request for your account.')
-                    ->action('Reset Password', url($baseUrl.'/auth/reset-password?token='.$this->token))
+                    ->action('Reset Password', url($baseUrl.'/auth/reset-password/'.$this->token))
                     ->line('This password reset link will expire in 60 minutes.')
                     ->line('If you did not request a password reset, no further action is required.');
     }

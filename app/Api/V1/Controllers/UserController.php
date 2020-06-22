@@ -2,14 +2,16 @@
 
 namespace App\Api\V1\Controllers;
 
+use App\Api\V1\Requests\AdminRequest;
 use App\Api\V1\Requests\ClicksRequest;
+use App\Api\V1\Requests\SignUpRequest;
+use App\Api\V1\Requests\SpecificResourceRequest;
 use App\Api\V1\Requests\UserClicksRequest;
 use App\Labels;
 use App\User;
 use App\UserClicks;
 use Carbon\Carbon;
 use phpDocumentor\Reflection\Types\Integer;
-use phpDocumentor\Reflection\Types\Mixed_;
 use Tymon\JWTAuth\JWTAuth;
 use App\Http\Controllers\Controller;
 use Auth;
@@ -45,6 +47,30 @@ class UserController extends Controller
         return response()->json(['success' => true,'users' =>User::all()]);
     }
 
+    public function updateUserDetails(SpecificResourceRequest $request,JWTAuth $JWTAuth)
+    {
+        $params = $request->only('name','zipcode','age');
+        $user = Auth::guard()->user();
+
+        if($user->role == 'admin' && !is_null($request->id)){
+            $user = User::findOrFail($request->id);
+        }
+        $user->fill($params);
+
+        if($user->save()){
+            return response()->json([
+                'success' => true,
+                'message' => 'User details updated successfully',
+                'user'=>$user
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'error' => array('message'=>'Couldn\'t update user.Try again')
+        ]);
+    }
+
     /**
      * Set User Clicks
      *
@@ -75,7 +101,7 @@ class UserController extends Controller
     }
 
     /**
-     * List current User clicks
+     * List User clicks
      *
      * @param UserClicksRequest $request
      * @param JWTAuth $JWTAuth
@@ -84,7 +110,7 @@ class UserController extends Controller
     public function getClicks(UserClicksRequest $request,JWTAuth $JWTAuth)
     {
         if($request->start_date && $request->end_date){
-            $clicks = $this->getUserClicksBetweenDate($request->start_date,$request->end_date);
+            $clicks = $this->getUserClicksBetweenDate($request->start_date,$request->end_date,$request->id);
 
             return response()->json([
                 'success' => true,
@@ -94,25 +120,30 @@ class UserController extends Controller
 
         return response()->json([
                 'success' => true,
-                'clicks' => $this->getAllClicks(),
+                'clicks' => $this->getAllClicks($request->id),
             ],200);
     }
 
 
-    public function getMyStatistics()
+    public function getMyStatistics(AdminRequest $request)
     {
         $user = Auth::guard()->user();
+        $userId = $request->id;
+
+        if($user->role == 'admin' && !is_null($userId)){
+            $user = User::findOrFail($userId);
+        }
         $today = Carbon::today();
         $yesterday = Carbon::yesterday();
 
         $todayClicks = $user->clicks()->whereDate('clicked_at', $today);
         $yesterdayClicks = $user->clicks()->whereDate('clicked_at', $yesterday);
 
-        $todayButtonClicks = $this->getClicksOfDayGroupedBy($today,'button');
-        $yesterdayButtonClicks = $this->getClicksOfDayGroupedBy($yesterday,'button');
+        $todayButtonClicks = $this->getClicksOfDayGroupedBy($today,'button',$userId);
+        $yesterdayButtonClicks = $this->getClicksOfDayGroupedBy($yesterday,'button',$userId);
 
         $todayCauseClicks = $this->getClicksOfDayGroupedBy($today,'cause');
-        $yesterdayCauseClicks = $this->getClicksOfDayGroupedBy($yesterday,'cause');
+        $yesterdayCauseClicks = $this->getClicksOfDayGroupedBy($yesterday,'cause',$userId);
 
         $todayFirstClick = $todayClicks->first();
         $yesterdayFirstClick = $yesterdayClicks->first();
@@ -143,9 +174,12 @@ class UserController extends Controller
      * @return UserClicks
      */
 
-    private function getUserClicksBetweenDate($startDate,$endDate)
+    private function getUserClicksBetweenDate($startDate,$endDate,$id=null)
     {
         $user = Auth::guard()->user();
+        if($user->role == 'admin' && !is_null($id)){
+            $user = User::findOrFail($id);
+        }
         return $user->clicks()->whereBetween('clicked_at', [$startDate,$endDate])->get();
     }
 
@@ -155,9 +189,12 @@ class UserController extends Controller
      * @return UserClicks
      */
 
-    private function getAllClicks()
+    private function getAllClicks($id=null)
     {
         $user = Auth::guard()->user();
+        if($user->role == 'admin' && !is_null($id)){
+            $user = User::findOrFail($id);
+        }
         return $user->clicks()->get();
     }
 
@@ -168,9 +205,12 @@ class UserController extends Controller
      *
      */
 
-    private function getClicksOfDayGroupedBy($date,$key)
+    private function getClicksOfDayGroupedBy($date,$key,$id=null)
     {
         $user = Auth::guard()->user();
+        if($user->role == 'admin' && !is_null($id)){
+            $user = User::findOrFail($id);
+        }
         return $user->clicks()->whereDate('clicked_at', $date)->groupBy($key)->orderBy('total','desc')->get([$key, \DB::raw('count(*) as total')]);
     }
 

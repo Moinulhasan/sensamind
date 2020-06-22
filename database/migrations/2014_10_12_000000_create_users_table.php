@@ -19,6 +19,7 @@ class CreateUsersTable extends Migration
             $table->string('email')->unique();
             $table->string('password');
             $table->string('zipcode');
+            $table->tinyInteger('age')->unsigned();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('lock_out_code')->nullable();
             $table->boolean('failed_logins')->default(0);

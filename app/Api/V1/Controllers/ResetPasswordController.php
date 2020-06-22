@@ -50,12 +50,19 @@ class ResetPasswordController extends Controller
             ]);
         }
 
-        $user = User::where('email', '=', $request->get('email'))->first();
+        if($request->get('email')){
+            $user = User::where('email', '=', $request->get('email'))->first();
+            return response()->json([
+                'success' => true,
+                'token' => $JWTAuth->fromUser($user)
+            ]);
+        }
 
         return response()->json([
             'success' => true,
-            'token' => $JWTAuth->fromUser($user)
+            'message' => 'Password changed successfully'
         ]);
+
     }
 
     /**
@@ -91,6 +98,8 @@ class ResetPasswordController extends Controller
     protected function reset($user, $password)
     {
         $user->password = $password;
+        $user->failed_logins = 0;
+        $user->lock_out_code = null;
         $user->save();
     }
 }

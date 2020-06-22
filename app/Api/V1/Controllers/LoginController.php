@@ -33,7 +33,7 @@ class LoginController extends Controller
                 ->json([
                     'success' => false,
                     'error' => array('message' => 'Invalid credentials. Try again')
-                ], 401);
+                ], 422);
         }
         $loginAttempts = $attemptedUser->failed_logins;
 
@@ -42,7 +42,7 @@ class LoginController extends Controller
                 ->json([
                     'success' => false,
                     'error' => array('message' => 'Account locked due to too many failed attempts. Check your email for account unlocking steps.')
-                ], 401);
+                ], 422);
         }
         if ($loginAttempts == $maxLoginAttempts) {
             $attemptedUser->failed_logins = $maxLoginAttempts + 1;
@@ -65,7 +65,7 @@ class LoginController extends Controller
                 ->json([
                     'success' => false,
                     'error' => array('message' => 'Account locked. Email with instruction to unlock account sent')
-                ], 401);
+                ], 422);
         }
 
         try {
@@ -78,7 +78,7 @@ class LoginController extends Controller
                     ->json([
                         'success' => false,
                         'error' => array('message' => 'Invalid credentials. Try again')
-                    ], 401);
+                    ], 422);
             }
 
         } catch (JWTException $e) {
@@ -98,7 +98,7 @@ class LoginController extends Controller
                 ->json([
                     'success' => false,
                     'error' => array('message' => 'Please verify your account and Try again')
-                ], 401);
+                ], 422);
         }
         if ($user->failed_logins > 0) {
             $user->failed_logins = 0;
@@ -125,7 +125,7 @@ class LoginController extends Controller
         $baseUrl = env('BASE_APP_URL', 'http://localhost:8000');
         $email = $user->email;
         $name = $user->name;
-        $actionUrl = $baseUrl . '/unlock/' . $token;
+        $actionUrl = $baseUrl . '/auth/unlock-account/' . $token;
         $details = ['name' => $name, 'actionUrl' => $actionUrl];
         Mail::to($email)->send(new UnlockAccount($details));
     }
