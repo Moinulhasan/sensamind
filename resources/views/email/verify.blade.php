@@ -6,7 +6,7 @@
         Verify My Account
     @endcomponent
     Regards,<br/>
-    Team Puramind
+    Team Sensamind
     @slot('subcopy')
         @lang(
             "If you’re having trouble clicking the \":actionText\" button, copy and paste the URL below\n".

@@ -8,7 +8,7 @@
     @endcomponent
 
     Regards,<br/>
-    Team Puramind
+    Team Sensamind
 
     @slot('subcopy')
         @lang(

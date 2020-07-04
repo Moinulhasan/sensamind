@@ -28,6 +28,6 @@ class VerifyEmail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Please verify your Puramind account')->markdown('email.verify')->with('details', $this->details);
+        return $this->subject('Please verify your Sensamind account')->markdown('email.verify')->with('details', $this->details);
     }
 }
