@@ -66,9 +66,16 @@ return [
     'clicks' => [
         'validation_rules' => [
             'clicks' => 'required|array',
-            'current_set.*' => 'required|numeric',
-            'button.*' => 'required|numeric|min:1|max:2',
-            'cause.*' => 'required|numeric|min:1|max:5',
+            'button.*' => 'required',
+            'cause.*' => 'required',
+            'clicked_at.*' => 'required|date'
+        ]
+    ],
+
+    'bluetooth_clicks' => [
+        'validation_rules' => [
+            'clicks' => 'required|array',
+            'button.*' => 'required',
             'clicked_at.*' => 'required|date'
         ]
     ],

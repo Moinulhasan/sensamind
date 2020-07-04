@@ -3,6 +3,7 @@
 namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\AdminRequest;
+use App\Api\V1\Requests\BluetoothClicksRequest;
 use App\Api\V1\Requests\ClicksRequest;
 use App\Api\V1\Requests\SignUpRequest;
 use App\Api\V1\Requests\SpecificResourceRequest;
@@ -97,6 +98,37 @@ class UserController extends Controller
         }
 
         if($user->clicks()->saveMany($clicks)){
+            return response()->json([
+                'success'=> true,
+                'message' => 'Click(s) saved successfully'
+            ],200);
+        }
+
+        return response()->json([
+            'success'=> false,
+            'message' => 'Couldn\'t save click'
+        ],422);
+    }
+
+    /**
+     * Set User Bluetooth Clicks
+     *
+     * @param ClicksRequest $request
+     * @param JWTAuth $JWTAuth
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function setBluetoothClicks(BluetoothClicksRequest $request, JWTAuth $JWTAuth)
+    {
+        $user = Auth::guard()->user();
+        $currentEvolution = $user->current_evolution;
+        $clicks = [];
+
+        foreach ($request->clicks as $click) {
+            $click['evolution'] = $currentEvolution;
+            $clicks[] = new ($click);
+        }
+
+        if($user->bluetoothClicks()->saveMany($clicks)){
             return response()->json([
                 'success'=> true,
                 'message' => 'Click(s) saved successfully'

@@ -85,4 +85,8 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->whereBetween('clicked_at', [$startDate,$endDate]);
     }
+    public function bluetoothClicks()
+    {
+        return $this->hasMany(BluetoothClicks::class);
+    }
 }

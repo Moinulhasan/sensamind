@@ -28,6 +28,7 @@ $api->version('v1', function (Router $api) {
 
     $api->group(['prefix' => 'user', 'middleware' => ['jwt.auth','auth.role:user']], function (Router $api) {
         $api->post('click', 'App\\Api\\V1\\Controllers\\UserController@setClicks');
+        $api->post('bluetooth/click', 'App\\Api\\V1\\Controllers\\UserController@setBluetoothClicks');
     });
 
     $api->group(['prefix' => 'user', 'middleware' => 'jwt.auth'], function (Router $api) {
@@ -46,10 +47,8 @@ $api->version('v1', function (Router $api) {
             }
         ]);
     });
-
-    $api->get('hello', function() {
-        return response()->json([
-            'message' => 'This is a simple example of item returned by your APIs. Everyone can see it.'
-        ]);
+    $api->group(['prefix' => 'contact'], function(Router $api) {
+        $api->post('subscribe', 'App\\Api\\V1\\Controllers\\ContactsController@subscribe');
+        $api->post('me', 'App\\Api\\V1\\Controllers\\ContactsController@contactDetails');
     });
 });
