@@ -13,19 +13,20 @@ class Evolutions extends Model
      */
     protected $fillable = ['user_id','current_set','next_set','gender','argued'];
     protected $hidden = ['created_at','updated_at'];
+    protected $with = ['buttonOne','buttonTwo'];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
 
-    public function currentSet()
+    public function buttonOne()
     {
-        return $this->belongsTo(Labels::class,'current_set');
+        return $this->belongsTo(Labels::class,'button_1');
     }
 
-    public function nextSet()
+    public function buttonTwo()
     {
-        return $this->belongsTo(Labels::class,'next_set');
+        return $this->belongsTo(Labels::class,'button_2');
     }
 }

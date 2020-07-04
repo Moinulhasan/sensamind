@@ -16,9 +16,9 @@ class CreateUserClicks extends Migration
         Schema::create('user_clicks', function (Blueprint $table) {
             $table->bigIncrements('id')->unsigned();
             $table->integer('user_id')->unsigned();
-            $table->tinyInteger('current_set')->unsigned();
-            $table->tinyInteger('button')->unsigned();
-            $table->tinyInteger('cause')->unsigned();
+            $table->integer('evolution')->unsigned()->nullable();
+            $table->string('button');
+            $table->string('cause');
             $table->timestamp('clicked_at')->index('clicked_time');
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

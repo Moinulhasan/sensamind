@@ -82,9 +82,7 @@ return [
 
     'create_label' => [
         'validation_rules' => [
-            'title' => 'required',
-            'button1' => 'required',
-            'button2' => 'required',
+            'button_label' => 'required',
             'cause1' => 'required',
             'cause2' => 'required',
             'cause3' => 'required',

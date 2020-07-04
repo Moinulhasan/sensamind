@@ -7,6 +7,7 @@ use App\Api\V1\Requests\ClicksRequest;
 use App\Api\V1\Requests\SignUpRequest;
 use App\Api\V1\Requests\SpecificResourceRequest;
 use App\Api\V1\Requests\UserClicksRequest;
+use App\Evolutions;
 use App\Labels;
 use App\User;
 use App\UserClicks;
@@ -81,9 +82,11 @@ class UserController extends Controller
     public function setClicks(ClicksRequest $request, JWTAuth $JWTAuth)
     {
         $user = Auth::guard()->user();
-
+        $currentEvolution = $user->current_evolution;
         $clicks = [];
+
         foreach ($request->clicks as $click) {
+            $click['evolution'] = $currentEvolution;
             $clicks[] = new UserClicks($click);
         }
 
@@ -148,19 +151,23 @@ class UserController extends Controller
         $todayFirstClick = $todayClicks->first();
         $yesterdayFirstClick = $yesterdayClicks->first();
 
-        $todayLabel = Labels::first();
-        $yesterdayLabel = Labels::first();
+        $todayEvolution = Evolutions::first();
+        $yesterdayEvolution = Evolutions::first();
+
+        $todayLabels = array('button1' => "Button 1", 'button2' => 'Button 2');
+        $yesterdayLabels = array('button1' => "Button 11", 'button2' => 'Button 22');
+
         if($todayFirstClick){
-            $todayLabel = Labels::find($todayFirstClick->current_set);
+            $todayLabels = array('button1' =>Labels::find($todayEvolution->button_1),'button2' => Labels::find($todayEvolution->button_2));
         }
         if($yesterdayFirstClick){
-            $yesterdayLabel = Labels::find($yesterdayFirstClick->current_set);
+            $yesterdayLabels = array('button1' =>Labels::find($yesterdayEvolution->button_1),'button2' => Labels::find($yesterdayEvolution->button_2));
         }
 
         return response()->json([
             'success' => true,
-            'today' => array('button_clicks' => $todayButtonClicks,'cause_clicks'=>$todayCauseClicks,'label'=>$todayLabel),
-            'yesterday' => array('button_clicks' => $yesterdayButtonClicks,'cause_clicks'=>$yesterdayCauseClicks,'label'=>$yesterdayLabel),
+            'today' => array('button_clicks' => $todayButtonClicks,'cause_clicks'=>$todayCauseClicks,'button_1_label'=>$todayLabels['button1'], 'button_2_label'=> $todayLabels['button2']),
+            'yesterday' => array('button_clicks' => $yesterdayButtonClicks,'cause_clicks'=>$yesterdayCauseClicks,'button_1_label'=>$yesterdayLabels['button1'], 'button_2_label'=> $yesterdayLabels['button2']),
         ], 200);
     }
 

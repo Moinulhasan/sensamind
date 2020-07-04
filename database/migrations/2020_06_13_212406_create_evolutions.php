@@ -15,15 +15,21 @@ class CreateEvolutions extends Migration
     {
         Schema::create('evolutions', function (Blueprint $table) {
             $table->increments('id')->unsigned();
-            $table->integer('user_id')->unsigned();
-            $table->integer('current_set')->unsigned();
-            $table->integer('next_set')->unsigned();
-            $table->tinyInteger('gender')->unsigned();
-            $table->tinyInteger('argued')->unsigned();
+            $table->string('title');
+            $table->string('description');
+            $table->integer('button_1')->unsigned();
+            $table->integer('button_2')->unsigned();
             $table->timestamps();
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('current_set')->references('id')->on('labels')->onDelete('cascade');
-            $table->foreign('next_set')->references('id')->on('labels')->onDelete('cascade');
+            $table->foreign('button_1')->references('id')->on('labels')->onDelete('cascade');
+            $table->foreign('button_2')->references('id')->on('labels')->onDelete('cascade');
+        });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreign('current_evolution')->references('id')->on('evolutions')->onDelete('set null');
+        });
+
+        Schema::table('user_clicks', function (Blueprint $table){
+            $table->foreign('evolution')->references('id')->on('evolutions')->onDelete('set null');
         });
     }
 
@@ -35,5 +41,13 @@ class CreateEvolutions extends Migration
     public function down()
     {
         Schema::dropIfExists('evolutions');
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropForeign('users_current_evolution_foreign');
+        });
+
+        Schema::table('user_clicks', function (Blueprint $table) {
+            $table->dropForeign('user_clicks_evolution_foreign');
+        });
     }
 }
