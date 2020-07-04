@@ -36,7 +36,13 @@ class UserController extends Controller
      */
     public function me()
     {
-        return response()->json(Auth::guard()->user());
+        $user = Auth::guard()->user();
+        $evolution = Evolutions::with(['buttonOne','buttonTwo'])->find($user->current_evolution);
+        return response()->json([
+            'success' => true,
+            'user' => $user,
+            'evolution' => $evolution
+        ]);
     }
     /**
      * Get Users list

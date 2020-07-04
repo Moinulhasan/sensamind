@@ -1,0 +1,70 @@
+<?php
+
+namespace App\Api\V1\Controllers;
+
+use App\Api\V1\Requests\ContactRequest;
+use App\Api\V1\Requests\SubscriptionRequest;
+use App\ContactDetail;
+use App\Http\Controllers\Controller;
+use App\Mail\NewContact;
+use App\Mail\SubscriptionSuccess;
+use App\Mail\VerifyEmail;
+use App\MailingList;
+use App\UserVerification;
+use Carbon\Carbon;
+use App\User;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Tymon\JWTAuth\JWTAuth;
+
+class ContactsController extends Controller
+{
+    public function subscribe(SubscriptionRequest $request)
+    {
+
+        $token = Hash::make($request->email);
+        $subToken = $token.str_random(30);
+        $params = ['email' => $request->email, 'subscription_token' => $subToken];
+        if(MailingList::where('email',$request->email)->first()){
+            return response()->json([
+                'success' => true,
+                'message' => 'You have already subscribed to our mailing list'
+            ]);
+        }
+        $mailList = new MailingList($params);
+        if($mailList->save())
+        {
+            return response()->json([
+                'success' => true,
+                'message' => 'You are successfully added to our mailing list'
+            ]);
+        }
+    }
+
+    public function contactDetails(ContactRequest $request)
+    {
+        $params = $request->only(['name','email','subject','message']);
+        $contact = new ContactDetail($params);
+        if($contact->save()){
+            return response()->json([
+                'success' => true,
+                'message' => 'Your contact request is successfully submitted.'
+            ]);
+        }
+    }
+
+    public function sendSubscriptionMail($email,$token)
+    {
+        $baseUrl = env('BASE_APP_URL', 'http://localhost:8000');
+        $actionUrl = $baseUrl.'/mailing_list/unsubscribe/'.$token;
+        $details = ['actionUrl' => $actionUrl];
+        Mail::to($email)->send(new SubscriptionSuccess($details));
+    }
+
+    public function sendContactDetailToAdmin($details)
+    {
+        $admin = env('ADMIN_EMAIL_ID','support@sensamind.com');
+        $details = ['details' =>$details];
+        Mail::to($admin)->send(new NewContact($details));
+    }
+}

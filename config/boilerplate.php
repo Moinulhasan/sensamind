@@ -97,4 +97,19 @@ return [
         ]
     ],
 
+    'contact_form' => [
+        'validation_rules' => [
+            'name' => 'required|min:2',
+            'email' => 'required|email',
+            'subject' => 'required|min:5',
+            'message' => 'required|min:10'
+        ]
+    ],
+
+    'mailing_list' => [
+        'validation_rules' => [
+            'email' => 'required|email'
+        ]
+    ]
+
 ];
