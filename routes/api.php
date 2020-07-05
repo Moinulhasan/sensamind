@@ -49,6 +49,7 @@ $api->version('v1', function (Router $api) {
     });
     $api->group(['prefix' => 'contact'], function(Router $api) {
         $api->post('subscribe', 'App\\Api\\V1\\Controllers\\ContactsController@subscribe');
+        $api->post('unsubscribe', 'App\\Api\\V1\\Controllers\\ContactsController@unSubscribe');
         $api->post('me', 'App\\Api\\V1\\Controllers\\ContactsController@contactDetails');
     });
 });

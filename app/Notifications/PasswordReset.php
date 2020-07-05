@@ -9,8 +9,6 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 class PasswordReset extends Notification
 {
-    use Queueable;
-
     /**
      * The password reset token.
      *

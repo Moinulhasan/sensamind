@@ -9,7 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 class UnlockAccount extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
     public $details;
     /**
      * Create a new message instance.
