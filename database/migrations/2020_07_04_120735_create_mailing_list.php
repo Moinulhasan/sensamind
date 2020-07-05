@@ -13,7 +13,7 @@ class CreateMailingList extends Migration
      */
     public function up()
     {
-        Schema::create('mailing_list', function (Blueprint $table) {
+        Schema::create('mailing_lists', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('email');
             $table->string('subscription_token');
@@ -28,6 +28,6 @@ class CreateMailingList extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('mailing_list');
+        Schema::dropIfExists('mailing_lists');
     }
 }

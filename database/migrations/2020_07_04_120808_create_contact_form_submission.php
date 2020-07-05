@@ -13,7 +13,7 @@ class CreateContactFormSubmission extends Migration
      */
     public function up()
     {
-        Schema::create('contact_form_submission', function (Blueprint $table) {
+        Schema::create('contact_form_submissions', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name',255);
             $table->string('email',255);
@@ -30,6 +30,6 @@ class CreateContactFormSubmission extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('contact_form_submission');
+        Schema::dropIfExists('contact_form_submissions');
     }
 }

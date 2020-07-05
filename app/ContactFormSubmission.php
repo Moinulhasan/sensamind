@@ -5,7 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 
-class ContactDetail extends Model
+class ContactFormSubmission extends Model
 {
     use Notifiable;
     /**

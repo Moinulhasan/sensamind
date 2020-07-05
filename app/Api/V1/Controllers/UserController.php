@@ -36,9 +36,29 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function me()
+    public function me(AdminRequest $request)
     {
         $user = Auth::guard()->user();
+        if($user->role == 'admin' && $request->id){
+            $userData = User::find($request->id);
+            if($userData && $userData->id){
+                $evolution = Evolutions::with(['buttonOne','buttonTwo'])->find($userData->current_evolution);
+                return response()->json([
+                    'success' => true,
+                    'user' => $userData,
+                    'evolution' => $evolution
+                ],200);
+            }
+            else {
+                return response()->json([
+                    'success' => false,
+                    'error' => array([
+                        'message' => 'User not found in system. Try again'
+                    ])
+                ],404);
+            }
+
+        }
         $evolution = Evolutions::with(['buttonOne','buttonTwo'])->find($user->current_evolution);
         return response()->json([
             'success' => true,
@@ -71,13 +91,13 @@ class UserController extends Controller
                 'success' => true,
                 'message' => 'User details updated successfully',
                 'user'=>$user
-            ]);
+            ],200);
         }
 
         return response()->json([
             'success' => false,
             'error' => array('message'=>'Couldn\'t update user.Try again')
-        ]);
+        ],404);
     }
 
     /**

@@ -4,7 +4,7 @@ namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\ContactRequest;
 use App\Api\V1\Requests\SubscriptionRequest;
-use App\ContactDetail;
+use App\ContactFormSubmission;
 use App\Http\Controllers\Controller;
 use App\Mail\NewContact;
 use App\Mail\SubscriptionSuccess;
@@ -34,6 +34,7 @@ class ContactsController extends Controller
         $mailList = new MailingList($params);
         if($mailList->save())
         {
+            $this->sendSubscriptionMail($request->email,$subToken);
             return response()->json([
                 'success' => true,
                 'message' => 'You are successfully added to our mailing list'
@@ -44,8 +45,9 @@ class ContactsController extends Controller
     public function contactDetails(ContactRequest $request)
     {
         $params = $request->only(['name','email','subject','message']);
-        $contact = new ContactDetail($params);
+        $contact = new ContactFormSubmission($params);
         if($contact->save()){
+            $this->sendContactDetailToAdmin($params);
             return response()->json([
                 'success' => true,
                 'message' => 'Your contact request is successfully submitted.'
@@ -55,7 +57,7 @@ class ContactsController extends Controller
 
     public function sendSubscriptionMail($email,$token)
     {
-        $baseUrl = env('BASE_APP_URL', 'http://localhost:8000');
+        $baseUrl = env('BASE_APP_URL', 'http://members.sensamind.com');
         $actionUrl = $baseUrl.'/mailing_list/unsubscribe/'.$token;
         $details = ['actionUrl' => $actionUrl];
         Mail::to($email)->send(new SubscriptionSuccess($details));
@@ -64,7 +66,6 @@ class ContactsController extends Controller
     public function sendContactDetailToAdmin($details)
     {
         $admin = env('ADMIN_EMAIL_ID','support@sensamind.com');
-        $details = ['details' =>$details];
         Mail::to($admin)->send(new NewContact($details));
     }
 }
