@@ -55,6 +55,36 @@ class ContactsController extends Controller
         }
     }
 
+    public function unSubscribe(SubscriptionRequest $request)
+    {
+        $token = $request->token;
+        if($token){
+            $subscriber = MailingList::Where('subscription_token',$token);
+            if($subscriber){
+                if($subscriber->delete()){
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Successfully unsubscribed from mailing list'
+                    ],200);
+                }
+                else {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Error unsubscribing user. Contact admin to unsubscribe.'
+                    ],422);
+                }
+            }
+            return response()->json([
+                'success' => true,
+                'message' => 'Already, excluded from our mailing lists.'
+            ],200);
+        }
+        return response()->json([
+            'success' => false,
+            'message' => 'Token invalid. Kindly use your unsubscription link sent to your mail id.'
+        ],422);
+    }
+
     public function sendSubscriptionMail($email,$token)
     {
         $baseUrl = env('BASE_APP_URL', 'http://members.sensamind.com');
