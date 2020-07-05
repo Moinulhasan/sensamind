@@ -204,7 +204,7 @@ class UserController extends Controller
         $todayButtonClicks = $this->getClicksOfDayGroupedBy($today,'button',$userId);
         $yesterdayButtonClicks = $this->getClicksOfDayGroupedBy($yesterday,'button',$userId);
 
-        $todayCauseClicks = $this->getClicksOfDayGroupedBy($today,'cause');
+        $todayCauseClicks = $this->getClicksOfDayGroupedBy($today,'cause',$userId);
         $yesterdayCauseClicks = $this->getClicksOfDayGroupedBy($yesterday,'cause',$userId);
 
         $todayFirstClick = $todayClicks->first();
