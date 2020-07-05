@@ -8,6 +8,7 @@ use App\Api\V1\Requests\ClicksRequest;
 use App\Api\V1\Requests\SignUpRequest;
 use App\Api\V1\Requests\SpecificResourceRequest;
 use App\Api\V1\Requests\UserClicksRequest;
+use App\BluetoothClicks;
 use App\Evolutions;
 use App\Labels;
 use App\User;
@@ -125,7 +126,7 @@ class UserController extends Controller
 
         foreach ($request->clicks as $click) {
             $click['evolution'] = $currentEvolution;
-            $clicks[] = new ($click);
+            $clicks[] = new BluetoothClicks($click);
         }
 
         if($user->bluetoothClicks()->saveMany($clicks)){
