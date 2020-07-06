@@ -21,6 +21,7 @@ $api->version('v1', function (Router $api) {
 
     $api->group(['prefix'=>'admin','middleware' => ['jwt.auth','auth.role:admin']], function(Router $api) {
         $api->get('user/list', 'App\\Api\\V1\\Controllers\\UserController@allUsers');
+        $api->post('user/create', 'App\\Api\\V1\\Controllers\\SignUpController@createUser');
         $api->get('labels', 'App\\Api\\V1\\Controllers\\LabelsController@getLabels');
         $api->post('labels', 'App\\Api\\V1\\Controllers\\LabelsController@createLabel');
         $api->put('labels', 'App\\Api\\V1\\Controllers\\LabelsController@updateLabel');

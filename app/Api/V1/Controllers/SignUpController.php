@@ -2,10 +2,14 @@
 
 namespace App\Api\V1\Controllers;
 
+use App\Api\V1\Requests\CreateUserRequest;
+use App\Mail\NewAccountByAdmin;
 use App\Mail\VerifyEmail;
 use App\UserVerification;
 use Config;
+use Auth;
 use App\User;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Tymon\JWTAuth\JWTAuth;
 use App\Http\Controllers\Controller;
@@ -62,6 +66,60 @@ class SignUpController extends Controller
         ], 201);
     }
 
+    public function createUser(CreateUserRequest $request, JWTAuth $JWTAuth)
+    {
+        $user = Auth::guard()->user();
+        if($user->role == 'admin'){
+            if($this->getUserByEmail($request->email)){
+                return response()->json([
+                    'success' => false,
+                    'error' => array('message'=>'Email address already in use.')
+                ],422);
+            }
+
+            $params = $request->only('name', 'email','zipcode','age','gender','role');
+            $user = new User($params);
+            $password = str_random(12);
+            $user->password = Hash::make($password);
+
+            if(!$user->save()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => array('message'=>'Couldn\'t create user. Try again')
+                ], 422);
+            }
+
+            $verification_code = str_random(40);
+            $verificationParam = array('user_id'=>$user->id,'token'=>$verification_code);
+            $verification = new UserVerification($verificationParam);
+
+            if($verification->save()){
+                try{
+                    $this->sendAccountCreationMail($user,$verification_code,$password);
+                }
+                catch (\Exception $e) {
+                    return response()->json([
+                        'success' => false,
+                        'summary' => $e->getMessage(),
+                        'error' => array('message'=>'Couldn\'t send verification mail. Try again')
+                    ], 422);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Account created successfully. Sent Email to confirm account'
+            ], 201);
+        }
+
+        return response()->json([
+            'success' => false,
+            'error' => array('message' => 'Un authorised request')
+        ],403);
+    }
+
+
+
     private function getUserByEmail($email){
         return User::where('email',$email)->first();
     }
@@ -74,5 +132,15 @@ class SignUpController extends Controller
         $actionUrl = $baseUrl . '/auth/verify-account/' . $token;
         $details = ['name' => $name, 'actionUrl' => $actionUrl];
         Mail::to($email)->send(new VerifyEmail($details));
+    }
+
+    public function sendAccountCreationMail($user,$token,$password)
+    {
+        $baseUrl = env('BASE_APP_URL', 'http://localhost:8000');
+        $email = $user->email;
+        $name = $user->name;
+        $actionUrl = $baseUrl . '/auth/verify-account/' . $token;
+        $details = ['name' => $name, 'actionUrl' => $actionUrl,'password' => $password,'email' => $email];
+        Mail::to($email)->send(new NewAccountByAdmin($details));
     }
 }

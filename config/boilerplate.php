@@ -17,6 +17,16 @@ return [
         ]
     ],
 
+    'create_user' => [
+        'validation_rules' => [
+            'name' => 'required',
+            'email' => 'required|email',
+            'age' => 'required|numeric',
+            'gender' => 'required|in:0,1,2',
+            'role' => 'required|in:user,admin'
+        ]
+    ],
+
     // these options are related to the login procedure
     'login' => [
 
