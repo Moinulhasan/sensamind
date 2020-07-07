@@ -27,6 +27,9 @@ return [
 
     'env' => env('APP_ENV', 'production'),
 
+    'base_url' => env('BASE_APP_URL',"https://members.sensamind.com"),
+    'admin_mail' => env('ADMIN_EMAIL_ID',"support@sensamind.com"),
+
     /*
     |--------------------------------------------------------------------------
     | Application Debug Mode

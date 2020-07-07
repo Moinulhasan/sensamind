@@ -87,7 +87,7 @@ class ContactsController extends Controller
 
     public function sendSubscriptionMail($email,$token)
     {
-        $baseUrl = env('BASE_APP_URL', 'http://members.sensamind.com');
+        $baseUrl = Config::get('app.base_url');
         $actionUrl = $baseUrl.'/mailing_list/unsubscribe/'.$token;
         $details = ['actionUrl' => $actionUrl];
         Mail::to($email)->send(new SubscriptionSuccess($details));
@@ -95,7 +95,7 @@ class ContactsController extends Controller
 
     public function sendContactDetailToAdmin($details)
     {
-        $admin = env('ADMIN_EMAIL_ID','support@sensamind.com');
+        $admin = Config::get('app.admin_mail');
         Mail::to($admin)->send(new NewContact($details));
     }
 }

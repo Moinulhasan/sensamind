@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Api\V1\Requests\LoginRequest;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Auth;
+use Config;
 
 class LoginController extends Controller
 {
@@ -122,7 +123,7 @@ class LoginController extends Controller
 
     public function sendAccountUnlockEmail($user,$token)
     {
-        $baseUrl = env('BASE_APP_URL', 'http://localhost:8000');
+        $baseUrl = Config::get('app.base_url');
         $email = $user->email;
         $name = $user->name;
         $actionUrl = $baseUrl . '/auth/unlock-account/' . $token;

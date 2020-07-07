@@ -126,7 +126,7 @@ class SignUpController extends Controller
 
     public function sendVerificationEmail($user,$token)
     {
-        $baseUrl = env('BASE_APP_URL', 'http://localhost:8000');
+        $baseUrl = Config::get('app.base_url');
         $email = $user->email;
         $name = $user->name;
         $actionUrl = $baseUrl . '/auth/verify-account/' . $token;
@@ -136,7 +136,7 @@ class SignUpController extends Controller
 
     public function sendAccountCreationMail($user,$token,$password)
     {
-        $baseUrl = env('BASE_APP_URL', 'http://localhost:8000');
+        $baseUrl = Config::get('app.base_url');
         $email = $user->email;
         $name = $user->name;
         $actionUrl = $baseUrl . '/auth/verify-account/' . $token;

@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Support\Facades\Config;
 
 class PasswordReset extends Notification
 {
@@ -45,7 +46,7 @@ class PasswordReset extends Notification
      */
     public function toMail($notifiable)
     {
-        $baseUrl = env('BASE_APP_URL','http://localhost:8000');
+        $baseUrl = Config::get('app.base_url');
         return (new MailMessage)
                     ->subject('Password Reset')
                     ->line('You are receiving this email because we received a password reset request for your account.')
