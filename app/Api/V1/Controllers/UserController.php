@@ -36,7 +36,7 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function me(AdminRequest $request)
+    public function userDetail(AdminRequest $request)
     {
         $user = Auth::guard()->user();
         if($user->role == 'admin' && $request->id){
@@ -76,9 +76,15 @@ class UserController extends Controller
         return response()->json(['success' => true,'users' =>User::all()]);
     }
 
-    public function updateUserDetails(SpecificResourceRequest $request,JWTAuth $JWTAuth)
+    public function updateUserDetails(AdminRequest $request,JWTAuth $JWTAuth)
     {
-        $params = $request->only('name','zipcode','age');
+        if(count($request->all()) < 0){
+            return response()->json([
+                'success' => false,
+                'error' => array('message'=>'Couldn\'t update user.Try again')
+            ],422);
+        }
+        $params = $request->only('name','zipcode','age','gender','argued');
         $user = Auth::guard()->user();
 
         if($user->role == 'admin' && !is_null($request->id)){
@@ -97,7 +103,7 @@ class UserController extends Controller
         return response()->json([
             'success' => false,
             'error' => array('message'=>'Couldn\'t update user.Try again')
-        ],404);
+        ],422);
     }
 
     /**
@@ -277,7 +283,7 @@ class UserController extends Controller
         if($user->role == 'admin' && !is_null($id)){
             $user = User::findOrFail($id);
         }
-        return $user->clicks()->whereDate('clicked_at', $date)->groupBy($key)->orderBy('total','desc')->get([$key, \DB::raw('count(*) as total')]);
+        return $user->clicks()->whereDate('clicked_at', $date)->groupBy($key)->orderBy('total','desc')->get([$key, \DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
     }
 
     /**

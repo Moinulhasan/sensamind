@@ -1,7 +1,7 @@
 {
-    "name": "francescomalatesta/laravel-api-boilerplate-jwt",
-    "description": "An API Boilerplate to create a ready-to-use REST API in seconds.",
-    "keywords": ["laravel", "api", "boilerplate", "jwt", "auth", "rest"],
+    "name": "Sensamind",
+    "description": "An REST API for Sesamind Application.",
+    "keywords": ["Sensamind", "get in shape"],
     "license": "MIT",
     "type": "project",
     "require": {

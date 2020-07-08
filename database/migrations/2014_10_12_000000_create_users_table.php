@@ -21,6 +21,7 @@ class CreateUsersTable extends Migration
             $table->string('zipcode');
             $table->tinyInteger('age')->unsigned();
             $table->tinyInteger('gender')->unsigned();
+            $table->string('argued',25);
             $table->integer('current_evolution')->unsigned()->default(1)->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('lock_out_code')->nullable();

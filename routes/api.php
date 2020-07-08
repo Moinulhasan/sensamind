@@ -17,14 +17,22 @@ $api->version('v1', function (Router $api) {
         $api->post('refresh', 'App\\Api\\V1\\Controllers\\RefreshController@refresh');
         $api->post('verify-account', 'App\\Api\\V1\\Controllers\\AccountController@verifyAccount');
         $api->post('unlock-account', 'App\\Api\\V1\\Controllers\\AccountController@unlockAccount');
+
+        $api->get('refresh', ['middleware' => 'jwt.refresh',function() {
+            return response()->json([
+                'success' => true,
+                'message' => 'Token Refreshed'
+            ]);
+        }
+        ]);
     });
 
     $api->group(['prefix'=>'admin','middleware' => ['jwt.auth','auth.role:admin']], function(Router $api) {
-        $api->get('user/list', 'App\\Api\\V1\\Controllers\\UserController@allUsers');
-        $api->post('user/create', 'App\\Api\\V1\\Controllers\\SignUpController@createUser');
         $api->get('labels', 'App\\Api\\V1\\Controllers\\LabelsController@getLabels');
         $api->post('labels', 'App\\Api\\V1\\Controllers\\LabelsController@createLabel');
         $api->put('labels', 'App\\Api\\V1\\Controllers\\LabelsController@updateLabel');
+        $api->get('users', 'App\\Api\\V1\\Controllers\\UserController@allUsers');
+        $api->post('users', 'App\\Api\\V1\\Controllers\\SignUpController@createUser');
     });
 
     $api->group(['prefix' => 'user', 'middleware' => ['jwt.auth','auth.role:user']], function (Router $api) {
@@ -33,24 +41,16 @@ $api->version('v1', function (Router $api) {
     });
 
     $api->group(['prefix' => 'user', 'middleware' => 'jwt.auth'], function (Router $api) {
-        $api->get('me', 'App\\Api\\V1\\Controllers\\UserController@me');
+        $api->put('/', 'App\\Api\\V1\\Controllers\\UserController@updateUserDetails');
+        $api->get('/', 'App\\Api\\V1\\Controllers\\UserController@userDetail');
         $api->get('clicks', 'App\\Api\\V1\\Controllers\\UserController@getClicks');
         $api->get('statistics', 'App\\Api\\V1\\Controllers\\UserController@getMyStatistics');
-        $api->put('/update', 'App\\Api\\V1\\Controllers\\UserController@updateUserDetails');
-
-        $api->get('refresh', [
-            'middleware' => 'jwt.refresh',
-            function() {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Token Refresh'
-                ]);
-            }
-        ]);
     });
+
     $api->group(['prefix' => 'contact'], function(Router $api) {
         $api->post('subscribe', 'App\\Api\\V1\\Controllers\\ContactsController@subscribe');
         $api->post('unsubscribe', 'App\\Api\\V1\\Controllers\\ContactsController@unSubscribe');
-        $api->post('me', 'App\\Api\\V1\\Controllers\\ContactsController@contactDetails');
+        $api->post('/', 'App\\Api\\V1\\Controllers\\ContactsController@contactDetails');
     });
+
 });
