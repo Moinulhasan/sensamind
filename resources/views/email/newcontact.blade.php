@@ -1,6 +1,6 @@
 @component('mail::message')
 Hi,<br/>
-New user contact form request.
+New user contact form request.<br/>
 Name :{{$details['name']}}<br/>
 email :{{$details['email']}}<br/>
 subject :{{$details['subject']}}<br/>

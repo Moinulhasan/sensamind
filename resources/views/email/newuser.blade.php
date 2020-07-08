@@ -1,9 +1,10 @@
 @component('mail::message')
 Hi {{$details['name']}},<br/>
-Your Sensamind account is just a step away from ready to use. Find below username and password.
+Your Sensamind account is just a step away from ready to use. Find below username and password which
+you can use to login after verifying your account.
 <br/>
-<strong>Username :</strong>{{$details['email']}}<br/>
-<strong>Password :</strong>{{$details['password']}}
+Username : {{$details['email']}}<br/>
+Password : {{$details['password']}}
 <br/><br/>
 @component('mail::button', ['url' => $details['actionUrl']])
     Verify My Account
