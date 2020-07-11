@@ -45,6 +45,7 @@ $api->version('v1', function (Router $api) {
         $api->get('/', 'App\\Api\\V1\\Controllers\\UserController@userDetail');
         $api->get('clicks', 'App\\Api\\V1\\Controllers\\UserController@getClicks');
         $api->get('statistics', 'App\\Api\\V1\\Controllers\\UserController@getMyStatistics');
+        $api->get('bluetooth/statistics', 'App\\Api\\V1\\Controllers\\UserController@getBluetoothClickStats');
     });
 
     $api->group(['prefix' => 'contact'], function(Router $api) {

@@ -80,7 +80,7 @@ class SignUpController extends Controller
             $params = $request->only('name', 'email','zipcode','age','gender','role');
             $user = new User($params);
             $password = str_random(12);
-            $user->password = Hash::make($password);
+            $user->password = $password;
 
             if(!$user->save()) {
                 return response()->json([

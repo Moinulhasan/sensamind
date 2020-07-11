@@ -219,8 +219,8 @@ class UserController extends Controller
         $todayEvolution = Evolutions::first();
         $yesterdayEvolution = Evolutions::first();
 
-        $todayLabels = array('button1' => "Button 1", 'button2' => 'Button 2');
-        $yesterdayLabels = array('button1' => "Button 11", 'button2' => 'Button 22');
+        $todayLabels = null;
+        $yesterdayLabels = null;
 
         if($todayFirstClick){
             $todayLabels = array('button1' =>Labels::find($todayEvolution->button_1),'button2' => Labels::find($todayEvolution->button_2));
@@ -236,6 +236,32 @@ class UserController extends Controller
         ], 200);
     }
 
+    /**
+     * Get Bluetooth Clicks count
+     */
+
+    function getBluetoothClickStats(AdminRequest $request)
+    {
+        $user = Auth::guard()->user();
+        $userId = $request->id;
+
+        if($user->role == 'admin' && !is_null($userId)){
+            $user = User::findOrFail($userId);
+        }
+
+        if($user){
+            return response()->json([
+                'success' => true,
+                'total_bluetooth_clicks' => $user->bluetoothClicks()->count()
+            ],200);
+        }
+
+        return response()->json([
+            'success' => false,
+            'error' => array('message' => 'Something went wrong. Couldn\'t find user details.')
+        ],422);
+
+    }
 
     /**
      *  Get Clicks made between a time interval
