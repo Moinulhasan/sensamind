@@ -233,6 +233,7 @@ class UserController extends Controller
             'success' => true,
             'today' => array('button_clicks' => $todayButtonClicks,'cause_clicks'=>$todayCauseClicks,'button_1_label'=>$todayLabels['button1'], 'button_2_label'=> $todayLabels['button2']),
             'yesterday' => array('button_clicks' => $yesterdayButtonClicks,'cause_clicks'=>$yesterdayCauseClicks,'button_1_label'=>$yesterdayLabels['button1'], 'button_2_label'=> $yesterdayLabels['button2']),
+            'bluetooth_clicks' => $user->bluetoothClicks()->count()
         ], 200);
     }
 
