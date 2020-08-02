@@ -71,9 +71,30 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function allUsers()
+    public function allUsers(AdminRequest $request)
     {
-        return response()->json(['success' => true,'users' =>User::all()]);
+        $page = $request->page > 0 ? $request->page : 1;
+        $limit = $request->limit > 0 ? $request->limit : 10;
+        $role = $request->role === 'admin'? 'admin':'user';
+        $offset = ($page - 1) * $limit;
+
+        if($request->search_key){
+            return response()->json([
+                'success' => true,
+                'users' =>User::where('role',$role)->where('email', 'LIKE', "{$request->search_key}%")->limit($limit)->offset($offset)->get(),
+                'page' => $page,
+                'limit' => $limit,
+                'total' => User::where('role',$role)->where('email', 'LIKE', "{$request->search_key}%")->count()
+            ],200);
+        }
+
+        return response()->json([
+            'success' => true,
+            'users' =>User::where('role',$role)->limit($limit)->offset($offset)->get(),
+            'page' => $page,
+            'limit' => $limit,
+            'total' => User::where('role',$role)->count()
+        ],200);
     }
 
     public function updateUserDetails(AdminRequest $request,JWTAuth $JWTAuth)
@@ -196,22 +217,27 @@ class UserController extends Controller
     public function getMyStatistics(AdminRequest $request)
     {
         $user = Auth::guard()->user();
-        $userId = $request->id;
+        $userId = $user->id;
 
-        if($user->role == 'admin' && !is_null($userId)){
-            $user = User::findOrFail($userId);
+        if($user->role == 'admin' && !is_null($request->id)){
+            $user = User::findOrFail($request->id);
+            $userId = $request->id;
         }
         $today = Carbon::today();
         $yesterday = Carbon::yesterday();
 
         $todayClicks = $user->clicks()->whereDate('clicked_at', $today);
         $yesterdayClicks = $user->clicks()->whereDate('clicked_at', $yesterday);
+        $overallClicks = $user->clicks()->where('evolution',$user->current_evolution)->get();
 
-        $todayButtonClicks = $this->getClicksOfDayGroupedBy($today,'button',$userId);
-        $yesterdayButtonClicks = $this->getClicksOfDayGroupedBy($yesterday,'button',$userId);
+        $todayButtonClicks = $this->getClicksGroupedBy($today,'button',$userId);
+        $yesterdayButtonClicks = $this->getClicksGroupedBy($yesterday,'button',$userId);
+        $overallButtonClicks = $this->getClicksGroupedBy(null,'button',$userId);
 
-        $todayCauseClicks = $this->getClicksOfDayGroupedBy($today,'cause',$userId);
-        $yesterdayCauseClicks = $this->getClicksOfDayGroupedBy($yesterday,'cause',$userId);
+        $todayCauseClicks = $this->getClicksGroupedBy($today,'cause',$userId);
+        $yesterdayCauseClicks = $this->getClicksGroupedBy($yesterday,'cause',$userId);
+        $overallCauseClicks = $this->getClicksGroupedBy(null,'cause',$userId);
+
 
         $todayFirstClick = $todayClicks->first();
         $yesterdayFirstClick = $yesterdayClicks->first();
@@ -231,9 +257,10 @@ class UserController extends Controller
 
         return response()->json([
             'success' => true,
-            'today' => array('button_clicks' => $todayButtonClicks,'cause_clicks'=>$todayCauseClicks,'button_1_label'=>$todayLabels['button1'], 'button_2_label'=> $todayLabels['button2']),
-            'yesterday' => array('button_clicks' => $yesterdayButtonClicks,'cause_clicks'=>$yesterdayCauseClicks,'button_1_label'=>$yesterdayLabels['button1'], 'button_2_label'=> $yesterdayLabels['button2']),
-            'bluetooth_clicks' => $user->bluetoothClicks()->count()
+            'today' => array('button_clicks' => $todayButtonClicks,'cause_clicks'=>$todayCauseClicks,'button_1_label'=>$todayLabels['button1'], 'button_2_label'=> $todayLabels['button2'],'total'=>$todayClicks->count()),
+            'yesterday' => array('button_clicks' => $yesterdayButtonClicks,'cause_clicks'=>$yesterdayCauseClicks,'button_1_label'=>$yesterdayLabels['button1'], 'button_2_label'=> $yesterdayLabels['button2'],'total'=>$yesterdayClicks->count()),
+            'overall' => array('button_clicks' => $overallButtonClicks,'cause_clicks'=>$overallCauseClicks,'button_1_label'=>$todayLabels['button1'], 'button_2_label'=> $todayLabels['button2'],'total'=>$overallClicks->count(),'first_click' => $overallClicks->first()?$overallClicks->first()->clicked_at:Carbon::now()),
+            'bluetooth_clicks' => $user->bluetoothClicks()->count(),
         ], 200);
     }
 
@@ -279,7 +306,7 @@ class UserController extends Controller
         if($user->role == 'admin' && !is_null($id)){
             $user = User::findOrFail($id);
         }
-        return $user->clicks()->whereBetween('clicked_at', [$startDate,$endDate])->get();
+        return $user->clicks()->whereBetween('clicked_at', [$startDate,$endDate])->orderBy('clicked_at','ASC')->get();
     }
 
     /**
@@ -294,7 +321,7 @@ class UserController extends Controller
         if($user->role == 'admin' && !is_null($id)){
             $user = User::findOrFail($id);
         }
-        return $user->clicks()->get();
+        return $user->clicks()->orderBy('clicked_at','ASC')->get();
     }
 
     /**
@@ -304,13 +331,16 @@ class UserController extends Controller
      *
      */
 
-    private function getClicksOfDayGroupedBy($date,$key,$id=null)
+    private function getClicksGroupedBy($date,$key,$id=null)
     {
         $user = Auth::guard()->user();
         if($user->role == 'admin' && !is_null($id)){
             $user = User::findOrFail($id);
         }
-        return $user->clicks()->whereDate('clicked_at', $date)->groupBy($key)->orderBy('total','desc')->get([$key, \DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
+        if($date){
+            return $user->clicks()->whereDate('clicked_at', $date)->groupBy($key)->orderBy('total','desc')->get([$key, \DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
+        }
+        return $user->clicks()->groupBy($key)->orderBy('total','desc')->get([$key, \DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
     }
 
     /**
