@@ -9,8 +9,7 @@ use App\Api\V1\Requests\SignUpRequest;
 use App\Api\V1\Requests\SpecificResourceRequest;
 use App\Api\V1\Requests\UserClicksRequest;
 use App\BluetoothClicks;
-use App\Evolutions;
-use App\Labels;
+use App\Buttons;
 use App\User;
 use App\UserClicks;
 use Carbon\Carbon;
@@ -40,13 +39,11 @@ class UserController extends Controller
     {
         $user = Auth::guard()->user();
         if ($user->role == 'admin' && $request->id) {
-            $userData = User::find($request->id);
+            $userData = User::find($request->id)->with(['buttonOne','buttonTwo'])->get();
             if ($userData && $userData->id) {
-                $evolution = Evolutions::with(['buttonOne', 'buttonTwo'])->find($userData->current_evolution);
                 return response()->json([
                     'success' => true,
                     'user' => $userData,
-                    'evolution' => $evolution
                 ], 200);
             } else {
                 return response()->json([
@@ -58,11 +55,9 @@ class UserController extends Controller
             }
 
         }
-        $evolution = Evolutions::with(['buttonOne', 'buttonTwo'])->find($user->current_evolution);
         return response()->json([
             'success' => true,
-            'user' => $user,
-            'evolution' => $evolution
+            'user' => $user->with(['buttonOne','buttonTwo'])->get(),
         ]);
     }
 
@@ -241,14 +236,8 @@ class UserController extends Controller
         $yesterdayCauseClicks = $this->getClicksGroupedBy($yesterday, 'cause', $userId);
         $overallCauseClicks = $this->getClicksGroupedBy(null, 'cause', $userId);
 
-        $todayEvolution = Evolutions::first();
-        $yesterdayEvolution = Evolutions::first();
-
-        $todayLabels = null;
-        $yesterdayLabels = null;
-
-        $todayLabels = array('button1' => $todayEvolution->buttonOne->button_label, 'button2' => $todayEvolution->buttonTwo->button_label);
-        $yesterdayLabels = array('button1' => $yesterdayEvolution->buttonOne->button_label, 'button2' => $yesterdayEvolution->buttonTwo->button_label);
+        $todayLabels = array('button1' => $user->buttonOne->button_label, 'button2' => $user->buttonTwo->button_label);
+        $yesterdayLabels = array('button1' => $user->buttonOne->button_label, 'button2' => $user->buttonTwo->button_label);
 
         return response()->json([
             'success' => true,

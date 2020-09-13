@@ -4,10 +4,10 @@ namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\CreateLabelRequest;
 use App\Api\V1\Requests\SpecificResourceRequest;
-use App\Labels;
+use App\Buttons;
 use App\Http\Controllers\Controller;
 
-class LabelsController extends Controller
+class ButtonsController extends Controller
 {
     /**
      * List all labels
@@ -16,7 +16,7 @@ class LabelsController extends Controller
      */
     public function getLabels()
     {
-        $labels = Labels::all();
+        $labels = Buttons::all();
 
         return response()->json([
             'success' => true,
@@ -34,7 +34,7 @@ class LabelsController extends Controller
 
     public function createLabel(CreateLabelRequest $request)
     {
-        $labels = new Labels($request->all());
+        $labels = new Buttons($request->all());
         if($labels->save()){
             return response()->json([
                 'success' => true,
@@ -56,8 +56,8 @@ class LabelsController extends Controller
      */
     public function updateLabel(SpecificResourceRequest $request)
     {
-        $params = $request->only('title','button1','button2','cause1','cause2','cause3','cause4','cause5');
-        $label = Labels::find($request->id);
+        $params = $request->only('button1','cause1','cause2','cause3','cause4','cause5');
+        $label = Buttons::find($request->id);
 
         if(!$label){
             return response()->json([

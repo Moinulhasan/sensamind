@@ -28,9 +28,12 @@ $api->version('v1', function (Router $api) {
     });
 
     $api->group(['prefix'=>'admin','middleware' => ['jwt.auth','auth.role:admin']], function(Router $api) {
-        $api->get('labels', 'App\\Api\\V1\\Controllers\\LabelsController@getLabels');
-        $api->post('labels', 'App\\Api\\V1\\Controllers\\LabelsController@createLabel');
-        $api->put('labels', 'App\\Api\\V1\\Controllers\\LabelsController@updateLabel');
+        $api->get('labels', 'App\\Api\\V1\\Controllers\\ButtonsController@getLabels');
+        $api->get('user_groups', 'App\\Api\\V1\\Controllers\\UserGroupController@getUserGroups');
+        $api->post('user_groups', 'App\\Api\\V1\\Controllers\\UserGroupController@createUserGroup');
+        $api->put('user_groups', 'App\\Api\\V1\\Controllers\\UserGroupController@updateUserGroup');
+        $api->post('labels', 'App\\Api\\V1\\Controllers\\ButtonsController@createLabel');
+        $api->put('labels', 'App\\Api\\V1\\Controllers\\ButtonsController@updateLabel');
         $api->get('users', 'App\\Api\\V1\\Controllers\\UserController@allUsers');
         $api->post('users', 'App\\Api\\V1\\Controllers\\SignUpController@createUser');
     });

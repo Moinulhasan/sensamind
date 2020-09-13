@@ -27,6 +27,13 @@ return [
         ]
     ],
 
+    'create_user_group' => [
+        'validation_rules' => [
+            'name' => 'required',
+            'description' => 'required'
+        ]
+    ],
+
     // these options are related to the login procedure
     'login' => [
 

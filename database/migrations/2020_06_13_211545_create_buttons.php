@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateLabels extends Migration
+class CreateButtons extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,10 @@ class CreateLabels extends Migration
      */
     public function up()
     {
-        Schema::create('labels', function (Blueprint $table) {
+        Schema::create('buttons', function (Blueprint $table) {
             $table->increments('id')->unsigned();
+            $table->unsignedInteger('user_group');
+            $table->unsignedTinyInteger('evolution');
             $table->string('button_label')->nullable();
             $table->string('cause1')->nullable();
             $table->string('cause2')->nullable();
@@ -23,6 +25,10 @@ class CreateLabels extends Migration
             $table->string('cause5')->nullable();
             $table->timestamps();
         });
+        Schema::table('user_clicks', function (Blueprint $table) {
+            $table->foreign('button_id')->references('id')->on('buttons')->onDelete('set null');
+        });
+
     }
 
     /**
@@ -32,6 +38,6 @@ class CreateLabels extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('labels');
+        Schema::dropIfExists('buttons');
     }
 }
