@@ -2,7 +2,7 @@
 
 namespace App\Api\V1\Controllers;
 
-use App\Api\V1\Requests\CreateLabelRequest;
+use App\Api\V1\Requests\CreateButtonRequest;
 use App\Api\V1\Requests\SpecificResourceRequest;
 use App\Buttons;
 use App\Http\Controllers\Controller;
@@ -10,51 +10,28 @@ use App\Http\Controllers\Controller;
 class ButtonsController extends Controller
 {
     /**
-     * List all labels
+     * List all Buttons
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function getLabels()
+    public function getButtons()
     {
-        $labels = Buttons::all();
+        $buttons = Buttons::all();
 
         return response()->json([
             'success' => true,
-            'labels' => $labels
+            'buttons' => $buttons
         ]);
     }
 
     /**
      *
-     * Create label
-     *
-     * @param CreateLabelRequest $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-
-    public function createLabel(CreateLabelRequest $request)
-    {
-        $labels = new Buttons($request->all());
-        if($labels->save()){
-            return response()->json([
-                'success' => true,
-                'message' => 'Label added successfully'
-            ]);
-        }
-        return response()->json([
-            'success' => false,
-            'error' => array('message'=>'Couldn\'t add label.Try again')
-        ]);
-    }
-
-    /**
-     *
-     * Update Label details
+     * Update Button details
      *
      * @param SpecificResourceRequest $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function updateLabel(SpecificResourceRequest $request)
+    public function updateButton(SpecificResourceRequest $request)
     {
         $params = $request->only('button1','cause1','cause2','cause3','cause4','cause5');
         $label = Buttons::find($request->id);
@@ -62,7 +39,7 @@ class ButtonsController extends Controller
         if(!$label){
             return response()->json([
                 'success' => false,
-                'error' => array('message'=>'Label not found. Try again')
+                'error' => array('message'=>'Button not found. Try again')
             ],404);
         }
 
@@ -71,13 +48,13 @@ class ButtonsController extends Controller
         if($label->save()){
             return response()->json([
                 'success' => true,
-                'message' => 'Label updated successfully'
+                'message' => 'Button updated successfully'
             ],200);
         }
 
         return response()->json([
             'success' => false,
-            'error' => array('message'=>'Couldn\'t update label.Try again')
+            'error' => array('message'=>'Couldn\'t update Button. Try again')
         ],404);
     }
 }

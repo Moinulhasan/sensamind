@@ -17,12 +17,15 @@ class CreateButtons extends Migration
             $table->increments('id')->unsigned();
             $table->unsignedInteger('user_group');
             $table->unsignedTinyInteger('evolution');
-            $table->string('button_label')->nullable();
-            $table->string('cause1')->nullable();
-            $table->string('cause2')->nullable();
-            $table->string('cause3')->nullable();
-            $table->string('cause4')->nullable();
-            $table->string('cause5')->nullable();
+            $table->string('button_label');
+            $table->string('cause1');
+            $table->string('cause2');
+            $table->string('cause3');
+            $table->string('cause4');
+            $table->string('cause5');
+            $table->string('node',10);
+            $table->string('branch1',10)->nullable();
+            $table->string('branch2',10)->nullable();
             $table->timestamps();
         });
         Schema::table('user_clicks', function (Blueprint $table) {

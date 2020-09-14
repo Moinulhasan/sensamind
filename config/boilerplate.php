@@ -105,17 +105,6 @@ return [
         ]
     ],
 
-    'create_label' => [
-        'validation_rules' => [
-            'button_label' => 'required',
-            'cause1' => 'required',
-            'cause2' => 'required',
-            'cause3' => 'required',
-            'cause4' => 'required',
-            'cause5' => 'required',
-        ]
-    ],
-
     'by_id' => [
         'validation_rules' => [
             'id' => 'required',
