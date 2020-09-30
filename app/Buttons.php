@@ -11,7 +11,7 @@ class Buttons extends Model
      *
      * @var array
      */
-    protected $fillable = ['user_group','node','branch1','branch2','button_label', 'cause1', 'cause2', 'cause3', 'cause4', 'cause5'];
+    protected $fillable = ['evolution','user_group','node','branch1','branch2','button_label', 'cause1', 'cause2', 'cause3', 'cause4', 'cause5'];
     protected $hidden = ['created_at', 'updated_at'];
 
     function evolution()

@@ -39,7 +39,7 @@ class UserController extends Controller
     {
         $user = Auth::guard()->user();
         if ($user->role == 'admin' && $request->id) {
-            $userData = User::find($request->id)->with(['buttonOne','buttonTwo'])->get();
+            $userData = User::find($request->id)->with(['buttonOne', 'buttonTwo'])->get();
             if ($userData && $userData->id) {
                 return response()->json([
                     'success' => true,
@@ -57,7 +57,7 @@ class UserController extends Controller
         }
         return response()->json([
             'success' => true,
-            'user' => $user->with(['buttonOne','buttonTwo'])->get(),
+            'user' => User::find($user->id)->with(['buttonOne', 'buttonTwo'])->get(),
         ]);
     }
 
@@ -70,25 +70,31 @@ class UserController extends Controller
     {
         $page = $request->page > 0 ? $request->page : 1;
         $limit = $request->limit > 0 ? $request->limit : 10;
-        $role = $request->role === 'admin' ? 'admin' : 'user';
         $offset = ($page - 1) * $limit;
 
+        $userQuery = User::query();
+
+        if ($request->user_group && $request->user_group != '') {
+            $userQuery->where('user_group', $request->user_group);
+        }
+
         if ($request->search_key) {
+            $users = $userQuery->where('email', 'LIKE', "{$request->search_key}%")->limit($limit)->offset($offset);
             return response()->json([
                 'success' => true,
-                'users' => User::where('role', $role)->where('email', 'LIKE', "{$request->search_key}%")->limit($limit)->offset($offset)->get(),
+                'users' => $users->get(),
                 'page' => $page,
                 'limit' => $limit,
-                'total' => User::where('role', $role)->where('email', 'LIKE', "{$request->search_key}%")->count()
+                'total' => $users->count()
             ], 200);
         }
 
         return response()->json([
             'success' => true,
-            'users' => User::where('role', $role)->limit($limit)->offset($offset)->get(),
+            'users' => $userQuery->limit($limit)->offset($offset)->get(),
             'page' => $page,
             'limit' => $limit,
-            'total' => User::where('role', $role)->count()
+            'total' => $userQuery->count()
         ], 200);
     }
 
@@ -104,7 +110,13 @@ class UserController extends Controller
         $user = Auth::guard()->user();
 
         if ($user->role == 'admin' && !is_null($request->id)) {
-            $user = User::findOrFail($request->id);
+            $tmpUser = User::find($request->id);
+            if ($tmpUser) {
+                $user = $tmpUser;
+                if ($request->user_group) {
+                    $user->fill(['user_group' => $request->user_group]);
+                }
+            }
         }
         $user->fill($params);
 
@@ -132,11 +144,11 @@ class UserController extends Controller
     public function setClicks(ClicksRequest $request, JWTAuth $JWTAuth)
     {
         $user = Auth::guard()->user();
-        $currentEvolution = $user->current_evolution;
         $clicks = [];
 
         foreach ($request->clicks as $click) {
-            $click['evolution'] = $currentEvolution;
+            $click['evolution'] = $user->current_evolution;
+            $click['user_group'] = $user->user_group;
             $clicks[] = new UserClicks($click);
         }
 
@@ -163,11 +175,11 @@ class UserController extends Controller
     public function setBluetoothClicks(BluetoothClicksRequest $request, JWTAuth $JWTAuth)
     {
         $user = Auth::guard()->user();
-        $currentEvolution = $user->current_evolution;
         $clicks = [];
 
         foreach ($request->clicks as $click) {
-            $click['evolution'] = $currentEvolution;
+            $click['evolution'] = $user->current_evolution;
+            $click['user_group'] = $user->user_group;
             $clicks[] = new BluetoothClicks($click);
         }
 
@@ -205,8 +217,8 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'clicks' => $this->getAllClicks($request->id),
-            'button_one' => $this->getButtonClicks($request->id,'button1'),
-            'button_two' => $this->getButtonClicks($request->id,'button2'),
+            'button_one' => $this->getButtonClicks($request->id, 'button1'),
+            'button_two' => $this->getButtonClicks($request->id, 'button2'),
 
         ], 200);
     }
@@ -284,13 +296,25 @@ class UserController extends Controller
      * @return UserClicks
      */
 
-    private function getUserClicksBetweenDate($startDate, $endDate, $id = null)
+    private function getUserClicksBetweenDate($startDate, $endDate, $request)
     {
         $user = Auth::guard()->user();
-        if ($user->role == 'admin' && !is_null($id)) {
-            $user = User::findOrFail($id);
+        $evolution = $request->evolution || $user->current_evolution;
+        if ($user->role == 'admin') {
+            if (!is_null($request->id)) {
+                $user = User::findOrFail($request->id);
+            } else {
+                $clicksQuery = UserClicks::query();
+                if ($request->user_group && $request->user_group != '') {
+                    $clicksQuery->where('user_group', $request->user_group);
+                }
+                if ($request->evolution && $request->evolution != '') {
+                    $clicksQuery->where('evolution', $request->evolution);
+                }
+            }
         }
-        return $user->clicks()->whereBetween('clicked_at', [$startDate, $endDate])->orderBy('clicked_at', 'ASC')->get();
+
+        return $user->clicks()->where('evolution', $evolution)->whereBetween('clicked_at', [$startDate, $endDate])->orderBy('clicked_at', 'ASC')->get();
     }
 
     /**
@@ -311,7 +335,7 @@ class UserController extends Controller
 
 
     /**
-     * Get all clicks
+     * Get all button-* clicks
      *
      * @return UserClicks
      */

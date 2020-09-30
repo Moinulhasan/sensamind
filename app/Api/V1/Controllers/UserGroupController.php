@@ -20,7 +20,7 @@ class UserGroupController extends Controller
      */
     public function getUserGroups()
     {
-        $groups = UserGroups::all();
+        $groups = UserGroups::withCount('users')->get();
 
         return response()->json([
             'success' => true,
@@ -93,6 +93,7 @@ class UserGroupController extends Controller
 
     private function createDefaultButtons($groupId)
     {
+        //Todo: Add to database as meta table and read from it or copy from default Group
         $buttons = array(
             [
                 'evolution' => 1,

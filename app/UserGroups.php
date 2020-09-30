@@ -29,11 +29,12 @@ class UserGroups extends Model
 
     public function users()
     {
-        return $this->hasMany(User::class);
+        return $this->hasMany(User::class,'user_group');
     }
 
     public function buttons()
     {
         return $this->hasMany(Buttons::class,'user_group');
     }
+
 }
