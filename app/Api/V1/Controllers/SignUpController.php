@@ -10,6 +10,7 @@ use Config;
 use Auth;
 use App\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Tymon\JWTAuth\JWTAuth;
 use App\Http\Controllers\Controller;
@@ -69,7 +70,7 @@ class SignUpController extends Controller
     public function createUser(CreateUserRequest $request, JWTAuth $JWTAuth)
     {
         $user = Auth::guard()->user();
-        if($user->role == 'admin'){
+        if($user->role == 'super_admin' || ($user->role == 'admin' && $user->user_group == $request->user_group)){
             if($this->getUserByEmail($request->email)){
                 return response()->json([
                     'success' => false,
@@ -77,12 +78,12 @@ class SignUpController extends Controller
                 ],422);
             }
 
-            $params = $request->only('name', 'email','zipcode','age','gender','role');
-            $user = new User($params);
+            $params = $request->only('name', 'email','zipcode','age','gender','role','user_group');
+            $newUser = new User($params);
             $password = str_random(12);
-            $user->password = $password;
+            $newUser->password = $password;
 
-            if(!$user->save()) {
+            if(!$newUser->save()) {
                 return response()->json([
                     'success' => false,
                     'error' => array('message'=>'Couldn\'t create user. Try again')
@@ -90,12 +91,12 @@ class SignUpController extends Controller
             }
 
             $verification_code = str_random(40);
-            $verificationParam = array('user_id'=>$user->id,'token'=>$verification_code);
+            $verificationParam = array('user_id'=>$newUser->id,'token'=>$verification_code);
             $verification = new UserVerification($verificationParam);
 
             if($verification->save()){
                 try{
-                    $this->sendAccountCreationMail($user,$verification_code,$password);
+                    $this->sendAccountCreationMail($newUser,$verification_code,$password);
                 }
                 catch (\Exception $e) {
                     return response()->json([

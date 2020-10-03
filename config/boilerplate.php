@@ -23,7 +23,8 @@ return [
             'email' => 'required|email',
             'age' => 'required|numeric',
             'gender' => 'required|in:0,1,2',
-            'role' => 'required|in:user,admin'
+            'role' => 'required|in:user,admin,super_admin',
+            'user_group' =>  'required|numeric'
         ]
     ],
 
@@ -84,17 +85,19 @@ return [
     'clicks' => [
         'validation_rules' => [
             'clicks' => 'required|array',
-            'button.*' => 'required',
-            'cause.*' => 'required',
-            'clicked_at.*' => 'required|date'
+            'clicks.*.button_id' => 'required',
+            'clicks.*.button' => 'required',
+            'clicks.*.cause' => 'required',
+            'clicks.*.clicked_at' => 'required|date'
         ]
     ],
 
     'bluetooth_clicks' => [
         'validation_rules' => [
             'clicks' => 'required|array',
-            'button.*' => 'required',
-            'clicked_at.*' => 'required|date'
+            'clicks.*.button_id' => 'required',
+            'clicks.*.button' => 'required',
+            'clicks.*.clicked_at' => 'required|date'
         ]
     ],
 

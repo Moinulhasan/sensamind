@@ -74,6 +74,19 @@ class UserController extends Controller
 
         $userQuery = User::query();
 
+        if($request->role){
+            $currentUser = Auth::guard()->user();
+            if($currentUser->role == 'super_admin'){
+                return response()->json([
+                    'success' => true,
+                    'users' => User::where('role','=','super_admin')->get(),
+                    'page' => $page,
+                    'limit' => $limit,
+                    'total' => User::where('role','=','super_admin')->count()
+                ], 200);
+            }
+        }
+
         if ($request->user_group && $request->user_group != '') {
             $userQuery->where('user_group', $request->user_group);
         }
@@ -109,7 +122,7 @@ class UserController extends Controller
         $params = $request->only('name', 'zipcode', 'age', 'gender', 'argued');
         $user = Auth::guard()->user();
 
-        if ($user->role == 'admin' && !is_null($request->id)) {
+        if ($user->role == 'super_admin' && !is_null($request->id)) {
             $tmpUser = User::find($request->id);
             if ($tmpUser) {
                 $user = $tmpUser;
@@ -118,6 +131,7 @@ class UserController extends Controller
                 }
             }
         }
+
         $user->fill($params);
 
         if ($user->save()) {
