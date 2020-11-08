@@ -38,9 +38,9 @@ class UserController extends Controller
     public function userDetail(AdminRequest $request)
     {
         $user = Auth::guard()->user();
-        if ($user->role == 'admin' && $request->id) {
-            $userData = User::find($request->id)->with(['buttonOne', 'buttonTwo'])->get();
-            if ($userData && $userData->id) {
+        if (($user->role == 'admin' || $user->role == 'super_admin') && $request->id) {
+            $userData = User::find($request->id)->with(['buttonOne', 'buttonTwo'])->first();
+            if ($userData) {
                 return response()->json([
                     'success' => true,
                     'user' => $userData,
@@ -231,9 +231,6 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'clicks' => $this->getAllClicks($request->id),
-            'button_one' => $this->getButtonClicks($request->id, 'button1'),
-            'button_two' => $this->getButtonClicks($request->id, 'button2'),
-
         ], 200);
     }
 
@@ -243,7 +240,7 @@ class UserController extends Controller
         $user = Auth::guard()->user();
         $userId = $user->id;
 
-        if ($user->role == 'admin' && !is_null($request->id)) {
+        if (($user->role == 'admin' || $user->role == 'super_admin') && !is_null($request->id)) {
             $user = User::findOrFail($request->id);
             $userId = $request->id;
         }
@@ -283,7 +280,7 @@ class UserController extends Controller
         $user = Auth::guard()->user();
         $userId = $request->id;
 
-        if ($user->role == 'admin' && !is_null($userId)) {
+        if (($user->role == 'admin' || $user->role == 'super_admin') && !is_null($userId)) {
             $user = User::findOrFail($userId);
         }
 
@@ -314,7 +311,7 @@ class UserController extends Controller
     {
         $user = Auth::guard()->user();
         $evolution = $request->evolution || $user->current_evolution;
-        if ($user->role == 'admin') {
+        if (($user->role == 'admin' || $user->role == 'super_admin')) {
             if (!is_null($request->id)) {
                 $user = User::findOrFail($request->id);
             } else {
@@ -340,29 +337,11 @@ class UserController extends Controller
     private function getAllClicks($id = null)
     {
         $user = Auth::guard()->user();
-        if ($user->role == 'admin' && !is_null($id)) {
-            $user = User::findOrFail($id);
+        if (($user->role == 'admin' || $user->role == 'super_admin') && !is_null($id)) {
+            $user = User::find($id);
         }
 
         return $user->clicks()->orderBy('clicked_at', 'ASC')->get();
-    }
-
-
-    /**
-     * Get all button-* clicks
-     *
-     * @return UserClicks
-     */
-
-    private function getButtonClicks($id = null, $key)
-    {
-        $user = Auth::guard()->user();
-        if ($user->role == 'admin' && !is_null($id)) {
-            $user = User::findOrFail($id);
-        }
-
-
-        return $user->clicks()->where('button', $key)->orderBy('clicked_at', 'ASC')->get();
     }
 
     /**
@@ -372,10 +351,10 @@ class UserController extends Controller
      *
      */
 
-    private function getClicksGroupedBy($date, $key, $id = null)
+    private function getClicksGroupedBy($date, $key='button_id', $id = null)
     {
         $user = Auth::guard()->user();
-        if ($user->role == 'admin' && !is_null($id)) {
+        if (($user->role == 'admin' || $user->role == 'super_admin') && !is_null($id)) {
             $user = User::findOrFail($id);
         }
         if ($date) {
