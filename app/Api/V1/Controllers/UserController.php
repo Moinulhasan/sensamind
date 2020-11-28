@@ -39,7 +39,7 @@ class UserController extends Controller
     {
         $user = Auth::guard()->user();
         if (($user->role == 'admin' || $user->role == 'super_admin') && $request->id) {
-            $userData = User::find($request->id)->with(['buttonOne', 'buttonTwo'])->first();
+            $userData = User::find($request->id);
             if ($userData) {
                 return response()->json([
                     'success' => true,
@@ -57,7 +57,7 @@ class UserController extends Controller
         }
         return response()->json([
             'success' => true,
-            'user' => User::find($user->id)->with(['buttonOne', 'buttonTwo'])->get(),
+            'user' => $user,
         ]);
     }
 

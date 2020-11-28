@@ -35,7 +35,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
 
-    protected $with = ['userGroup'];
+    protected $with = ['userGroup','buttonOne','buttonTwo'];
 
     /**
      * Automatically creates hash for the user password.
