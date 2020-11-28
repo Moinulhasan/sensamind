@@ -22,13 +22,13 @@ class CreateUserGroupsTable extends Migration
         });
 
         Schema::table('users', function (Blueprint $table) {
-            $table->foreign('user_group')->references('id')->on('user_groups')->onDelete('set default');
+            $table->foreign('user_group')->references('id')->on('user_groups')->onDelete('cascade');
         });
         Schema::table('user_clicks', function (Blueprint $table) {
-            $table->foreign('user_group')->references('id')->on('user_groups')->onDelete('set default');
+            $table->foreign('user_group')->references('id')->on('user_groups')->onDelete('cascade');
         });
         Schema::table('buttons', function (Blueprint $table) {
-            $table->foreign('user_group')->references('id')->on('user_groups')->onDelete('set default');
+            $table->foreign('user_group')->references('id')->on('user_groups')->onDelete('cascade');
         });
     }
 
