@@ -3,8 +3,10 @@
 namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\CreateUserRequest;
+use App\Buttons;
 use App\Mail\NewAccountByAdmin;
 use App\Mail\VerifyEmail;
+use App\UserGroups;
 use App\UserVerification;
 use Config;
 use Auth;
@@ -80,6 +82,11 @@ class SignUpController extends Controller
 
             $params = $request->only('name', 'email','zipcode','age','gender','role','user_group');
             $newUser = new User($params);
+            $userGroupDetails = Buttons::where('user_group',$request->user_group)->limit(2)->get();
+            $button1 = $userGroupDetails[0]['id'];
+            $button2 = $userGroupDetails[1]['id'];
+            $newUser->current_btn1 = $button1;
+            $newUser->current_btn2 = $button2;
             $password = str_random(12);
             $newUser->password = $password;
 

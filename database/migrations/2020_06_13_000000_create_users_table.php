@@ -25,7 +25,7 @@ class CreateUsersTable extends Migration
             $table->string('argued',25);
             $table->unsignedTinyInteger('current_evolution')->default(1)->nullable();
             $table->unsignedInteger('current_btn1')->default(1)->nullable();
-            $table->unsignedInteger('current_btn2')->default(1)->nullable();
+            $table->unsignedInteger('current_btn2')->default(2)->nullable();
             $table->string('evolution_path')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('lock_out_code')->nullable();
