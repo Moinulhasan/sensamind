@@ -246,6 +246,7 @@ class UserController extends Controller
         }
         $today = Carbon::today();
         $yesterday = Carbon::yesterday();
+        $firstClick = $user->clicks()->orderBy('clicked_at','asc')->first();
 
         $todayClicks = $user->clicks()->whereDate('clicked_at', $today);
         $yesterdayClicks = $user->clicks()->whereDate('clicked_at', $yesterday);
@@ -266,7 +267,7 @@ class UserController extends Controller
             'success' => true,
             'today' => array('button_clicks' => $todayButtonClicks, 'cause_clicks' => $todayCauseClicks, 'button_1_label' => $todayLabels['button1'], 'button_2_label' => $todayLabels['button2'], 'total' => $todayClicks->count()),
             'yesterday' => array('button_clicks' => $yesterdayButtonClicks, 'cause_clicks' => $yesterdayCauseClicks, 'button_1_label' => $yesterdayLabels['button1'], 'button_2_label' => $yesterdayLabels['button2'], 'total' => $yesterdayClicks->count()),
-            'overall' => array('button_clicks' => $overallButtonClicks, 'cause_clicks' => $overallCauseClicks, 'button_1_label' => $todayLabels['button1'], 'button_2_label' => $todayLabels['button2'], 'total' => $overallClicks->count(), 'first_click' => $overallClicks->first() ? $overallClicks->first()->clicked_at : Carbon::now()),
+            'overall' => array('button_clicks' => $overallButtonClicks, 'cause_clicks' => $overallCauseClicks, 'button_1_label' => $todayLabels['button1'], 'button_2_label' => $todayLabels['button2'], 'total' => $overallClicks->count(), 'first_click' => $firstClick ? $firstClick['clicked_at'] : Carbon::now()),
             'bluetooth_clicks' => $user->bluetoothClicks()->count(),
         ], 200);
     }
@@ -358,9 +359,9 @@ class UserController extends Controller
             $user = User::findOrFail($id);
         }
         if ($date) {
-            return $user->clicks()->whereDate('clicked_at', $date)->groupBy($key)->orderBy('total', 'desc')->get([$key, \DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
+            return $user->clicks()->whereDate('clicked_at', $date)->groupBy($key)->orderBy('clicked_at', 'asc')->get([$key, \DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
         }
-        return $user->clicks()->groupBy($key)->orderBy('total', 'desc')->get([$key, \DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
+        return $user->clicks()->groupBy($key)->orderBy('clicked_at', 'asc')->get([$key, \DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
     }
 
     /**
