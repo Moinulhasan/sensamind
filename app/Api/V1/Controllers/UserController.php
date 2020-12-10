@@ -13,6 +13,10 @@ use App\Buttons;
 use App\User;
 use App\UserClicks;
 use Carbon\Carbon;
+use DB;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
 use phpDocumentor\Reflection\Types\Integer;
 use Tymon\JWTAuth\JWTAuth;
 use App\Http\Controllers\Controller;
@@ -33,7 +37,7 @@ class UserController extends Controller
     /**
      * Get the authenticated User
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function userDetail(AdminRequest $request)
     {
@@ -64,7 +68,7 @@ class UserController extends Controller
     /**
      * Get Users list
      *
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function allUsers(AdminRequest $request)
     {
@@ -74,15 +78,15 @@ class UserController extends Controller
 
         $userQuery = User::query();
 
-        if($request->role){
+        if ($request->role) {
             $currentUser = Auth::guard()->user();
-            if($currentUser->role == 'super_admin'){
+            if ($currentUser->role == 'super_admin') {
                 return response()->json([
                     'success' => true,
-                    'users' => User::where('role','=','super_admin')->get(),
+                    'users' => User::where('role', '=', 'super_admin')->get(),
                     'page' => $page,
                     'limit' => $limit,
-                    'total' => User::where('role','=','super_admin')->count()
+                    'total' => User::where('role', '=', 'super_admin')->count()
                 ], 200);
             }
         }
@@ -135,10 +139,11 @@ class UserController extends Controller
         $user->fill($params);
 
         if ($user->save()) {
+            $newUser = User::where('id','=',$user->id)->with(['userGroup','buttonOne','buttonTwo'])->first();
             return response()->json([
                 'success' => true,
                 'message' => 'User details updated successfully',
-                'user' => $user
+                'user' => $newUser
             ], 200);
         }
 
@@ -153,9 +158,9 @@ class UserController extends Controller
      *
      * @param ClicksRequest $request
      * @param JWTAuth $JWTAuth
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
-    public function setClicks(ClicksRequest $request, JWTAuth $JWTAuth)
+    public function setClicks(ClicksRequest $request, JWTAuth $JWTAuth): JsonResponse
     {
         $user = Auth::guard()->user();
         $clicks = [];
@@ -167,6 +172,36 @@ class UserController extends Controller
         }
 
         if ($user->clicks()->saveMany($clicks)) {
+            $currentEvolution = $user->current_evolution;
+            if ($currentEvolution > 0 && $currentEvolution < 4) {
+                if ($this->shouldSwitchEvolution($user->id)) {
+                    $maxClickedButton = $this->getMaxClickedButton($user);
+                    if ($maxClickedButton && $maxClickedButton->branch1 && $maxClickedButton->branch2){
+                        $btn1 = Buttons::where('user_group','=',$user->user_group)->where('node','=',$maxClickedButton->branch1)->first();
+                        $btn2 = Buttons::where('user_group','=',$user->user_group)->where('node','=',$maxClickedButton->branch2)->first();
+                        $evolutionPath = $user->evolution_path?$user->evolution_path."-"."E".$currentEvolution.":B".$maxClickedButton->id:"E1:B".$maxClickedButton->id;
+                        $newCurrentEvolution = $currentEvolution + 1;
+
+                        $updateFields = [
+                            'current_evolution' => $newCurrentEvolution,
+                            'evolution_path' => $evolutionPath,
+                            'current_btn1' => $btn1['id'],
+                            'current_btn2' => $btn2['id']
+                        ];
+
+                        $user->fill($updateFields);
+                        if($user->save()){
+                            $newUser = User::where('id','=',$user->id)->with(['userGroup','buttonOne','buttonTwo'])->first();
+                            return response()->json([
+                                'success' => true,
+                                'message' => 'Click(s) saved successfully',
+                                'user' => $newUser
+                            ], 200);
+                        }
+                    }
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'message' => 'Click(s) saved successfully'
@@ -175,7 +210,7 @@ class UserController extends Controller
 
         return response()->json([
             'success' => false,
-            'message' => 'Couldn\'t save click'
+            'message' => 'Couldn\'t save clicks'
         ], 422);
     }
 
@@ -184,7 +219,7 @@ class UserController extends Controller
      *
      * @param ClicksRequest $request
      * @param JWTAuth $JWTAuth
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function setBluetoothClicks(BluetoothClicksRequest $request, JWTAuth $JWTAuth)
     {
@@ -215,12 +250,12 @@ class UserController extends Controller
      *
      * @param UserClicksRequest $request
      * @param JWTAuth $JWTAuth
-     * @return \Illuminate\Http\JsonResponse
+     * @return JsonResponse
      */
     public function getClicks(UserClicksRequest $request, JWTAuth $JWTAuth)
     {
         if ($request->start_date && $request->end_date) {
-            $clicks = $this->getUserClicksBetweenDate($request->start_date, $request->end_date, $request->id);
+            $clicks = $this->getUserClicksBetweenDate($request);
 
             return response()->json([
                 'success' => true,
@@ -246,7 +281,7 @@ class UserController extends Controller
         }
         $today = Carbon::today();
         $yesterday = Carbon::yesterday();
-        $firstClick = $user->clicks()->orderBy('clicked_at','asc')->first();
+        $firstClick = $user->clicks()->orderBy('clicked_at', 'ASC')->first();
 
         $todayClicks = $user->clicks()->whereDate('clicked_at', $today);
         $yesterdayClicks = $user->clicks()->whereDate('clicked_at', $yesterday);
@@ -304,29 +339,35 @@ class UserController extends Controller
      *
      * @param $startDate
      * @param $endDate
+     * @param $request
      *
-     * @return UserClicks
+     * @return UserClicks|Builder[]|Collection
      */
 
-    private function getUserClicksBetweenDate($startDate, $endDate, $request)
+    private function getUserClicksBetweenDate($request)
     {
         $user = Auth::guard()->user();
-        $evolution = $request->evolution || $user->current_evolution;
+        $clicksQuery = UserClicks::query();
         if (($user->role == 'admin' || $user->role == 'super_admin')) {
             if (!is_null($request->id)) {
                 $user = User::findOrFail($request->id);
-            } else {
-                $clicksQuery = UserClicks::query();
-                if ($request->user_group && $request->user_group != '') {
-                    $clicksQuery->where('user_group', $request->user_group);
-                }
-                if ($request->evolution && $request->evolution != '') {
-                    $clicksQuery->where('evolution', $request->evolution);
-                }
+                $clicksQuery->where('user_id', $user->id);
             }
+        } else {
+            $clicksQuery->where('user_id', $user->id);
         }
 
-        return $user->clicks()->where('evolution', $evolution)->whereBetween('clicked_at', [$startDate, $endDate])->orderBy('clicked_at', 'ASC')->get();
+        if ($request->user_group && $request->user_group != '') {
+            $clicksQuery->where('user_group', $request->user_group);
+        }
+        if ($request->evolution && $request->evolution != '') {
+            $clicksQuery->where('evolution', $request->evolution);
+        }
+        if ($request->start_date && $request->start_date != '' && $request->end_date && $request->end_date != '') {
+            $clicksQuery->whereBetween('clicked_at', [$request->start_date, $request->end_date]);
+        }
+
+        return $clicksQuery->orderBy('clicked_at', 'ASC')->get();
     }
 
     /**
@@ -335,7 +376,7 @@ class UserController extends Controller
      * @return UserClicks
      */
 
-    private function getAllClicks($id = null)
+    private function getAllClicks($id = null): UserClicks
     {
         $user = Auth::guard()->user();
         if (($user->role == 'admin' || $user->role == 'super_admin') && !is_null($id)) {
@@ -348,30 +389,64 @@ class UserController extends Controller
     /**
      *
      * Get clicks grouped by key
+     * @param $date
+     * @param string $key
+     * @param null $id
      * @return Mixed
-     *
      */
 
-    private function getClicksGroupedBy($date, $key='button_id', $id = null)
+    private function getClicksGroupedBy($date, $key = 'button_id', $id = null)
     {
         $user = Auth::guard()->user();
         if (($user->role == 'admin' || $user->role == 'super_admin') && !is_null($id)) {
             $user = User::findOrFail($id);
         }
         if ($date) {
-            return $user->clicks()->whereDate('clicked_at', $date)->groupBy($key)->orderBy('clicked_at', 'asc')->get([$key, \DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
+            return $user->clicks()->whereDate('clicked_at', $date)->groupBy($key)->orderBy('clicked_at', 'ASC')->get([$key, DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
         }
-        return $user->clicks()->groupBy($key)->orderBy('clicked_at', 'asc')->get([$key, \DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
+        return $user->clicks()->groupBy($key)->orderBy('clicked_at', 'ASC')->get([$key, DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
     }
 
     /**
-     * Get Max value in array of objects
      *
-     * @return Integer
+     * Check if user should be moved to next evolution and return new button
+     *
+     * @param userId
+     * @return bool
+     *
      */
 
-    private function findMaxValueInArray($array, $key)
+    private function shouldSwitchEvolution($userId): bool
     {
-        return max(array_column($array, $key));
+
+        #get clicks count in past 3 days
+        $pivotDate = Carbon::now()->subDays(3);
+        $clicksMade = UserClicks::where('user_id', $userId)->where('clicked_at', '>', $pivotDate)->get();
+
+        if ($clicksMade->count() < 5) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Get max clicked button in the current Evolution for the user
+     *
+     * @param $user
+     * @return Buttons|Builder[]|Collection
+     */
+
+    private function getMaxClickedButton($user)
+    {
+
+        $clicksQuery = UserClicks::query();
+        $clicksQuery->where('user_id', $user->id);
+        $clicksQuery->where('evolution', $user->current_evolution);
+        $clicksQuery->groupBy(['button_id']);
+        $clicksQuery->orderBy('total', 'DESC');
+        $maxButtonIdAndCount = $clicksQuery->first(['button_id', DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
+        $maxClickedButton = Buttons::where('id',$maxButtonIdAndCount['button_id'])->first();
+
+        return $maxClickedButton;
     }
 }
