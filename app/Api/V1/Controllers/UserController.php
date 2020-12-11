@@ -442,11 +442,23 @@ class UserController extends Controller
         $clicksQuery = UserClicks::query();
         $clicksQuery->where('user_id', $user->id);
         $clicksQuery->where('evolution', $user->current_evolution);
-        $clicksQuery->groupBy(['button_id']);
-        $clicksQuery->orderBy('total', 'DESC');
-        $maxButtonIdAndCount = $clicksQuery->first(['button_id', DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
-        $maxClickedButton = Buttons::where('id',$maxButtonIdAndCount['button_id'])->first();
+        $preconditionCheckQuery = $clicksQuery;
+        $precondition = $preconditionCheckQuery->first();
+        if($precondition){
+            if((Carbon::now()->diffInDays($precondition['clicked_at'])) < 3){
+                return null;
+            }
+            else{
+                $clicksQuery->groupBy(['button_id']);
+                $clicksQuery->orderBy('total', 'DESC');
+                $maxButtonIdAndCount = $clicksQuery->first(['button_id', DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
+                $maxClickedButton = Buttons::where('id',$maxButtonIdAndCount['button_id'])->first();
+                return $maxClickedButton;
+            }
+        }
+        else {
+            return null;
+        }
 
-        return $maxClickedButton;
     }
 }
