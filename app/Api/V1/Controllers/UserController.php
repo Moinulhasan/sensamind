@@ -254,9 +254,9 @@ class UserController extends Controller
      */
     public function getClicks(UserClicksRequest $request, JWTAuth $JWTAuth)
     {
-        if ($request->start_date && $request->end_date) {
-            $clicks = $this->getUserClicksBetweenDate($request);
-
+        $user = Auth::guard()->user();
+        if ($user->role !== 'user') {
+            $clicks = $this->getFilteredClicks($request);
             return response()->json([
                 'success' => true,
                 'clicks' => $clicks,
@@ -275,7 +275,11 @@ class UserController extends Controller
         $user = Auth::guard()->user();
         $userId = $user->id;
 
-        if (($user->role == 'admin' || $user->role == 'super_admin') && !is_null($request->id)) {
+        if($user->role != 'user' && is_null($request->id)){
+            return $this->getStatisticsByFilter($request);
+        }
+
+        if (($user->role !== 'user') && !is_null($request->id)) {
             $user = User::findOrFail($request->id);
             $userId = $request->id;
         }
@@ -376,7 +380,7 @@ class UserController extends Controller
      * @return UserClicks
      */
 
-    private function getAllClicks($id = null): UserClicks
+    private function getAllClicks($id = null)
     {
         $user = Auth::guard()->user();
         if (($user->role == 'admin' || $user->role == 'super_admin') && !is_null($id)) {
@@ -442,7 +446,7 @@ class UserController extends Controller
         $clicksQuery = UserClicks::query();
         $clicksQuery->where('user_id', $user->id);
         $clicksQuery->where('evolution', $user->current_evolution);
-        $preconditionCheckQuery = $clicksQuery;
+        $preconditionCheckQuery = clone $clicksQuery;
         $precondition = $preconditionCheckQuery->first();
         if($precondition){
             if((Carbon::now()->diffInDays($precondition['clicked_at'])) < 3){
@@ -460,5 +464,100 @@ class UserController extends Controller
             return null;
         }
 
+    }
+
+    private function getFilteredClicks($request)
+    {
+        $clicksQuery = UserClicks::query();
+        $userQuery = User::query();
+        $byUser = false;
+
+        if($request->gender && $request->gender < 3){
+            $byUser = true;
+            $userQuery->where('gender','=',$request->gender);
+        }
+        if($request->age){
+            $byUser = true;
+            $ageRange = preg_split("/[-\s:]/",$request->age);
+            $minAge = $ageRange[0];
+            $maxAge = $ageRange[1];
+            if($minAge < 100 && $maxAge < 100) {
+                $userQuery->whereBetween('age',[$minAge,$maxAge]);
+            }
+        }
+        if($request->zipcode && strlen($request->zipcode) > 0){
+            $byUser = true;
+            $userQuery->whereRaw("UPPER(zipcode) LIKE '".strtoupper($request->zipcode)."%'");
+        }
+
+        $users = $userQuery->get(['id']);
+
+        if($request->user_group){
+            $clicksQuery->where('user_group', '=', $request->user_group);
+        }
+        if($request->evolution){
+            $clicksQuery->where('evolution','=', $request->evolution);
+        }
+        if($request->time_range){
+            $clicksQuery->where('clicked_at','>', Carbon::now()->subHours($request->time_range));
+        }
+        if($byUser){
+            $clicksQuery->whereIn('user_id',$users);
+        }
+        return $clicksQuery->get();
+    }
+
+    private function getStatisticsByFilter($request)
+    {
+        $clicksQuery = UserClicks::query();
+        $userQuery = User::query();
+        $byUser = false;
+
+        if($request->gender && $request->gender < 3){
+            $byUser = true;
+            $userQuery->where('gender','=',$request->gender);
+        }
+        if($request->age){
+            $byUser = true;
+            $ageRange = preg_split("/[-\s:]/",$request->age);
+            $minAge = $ageRange[0];
+            $maxAge = $ageRange[1];
+            if($minAge < 100 && $maxAge < 100) {
+                $userQuery->whereBetween('age',[$minAge,$maxAge]);
+            }
+        }
+        if($request->zipcode && strlen($request->zipcode) > 0){
+            $byUser = true;
+            $userQuery->whereRaw("UPPER(zipcode) LIKE '". strtoupper($request->zipcode)."%'");
+        }
+
+        $users = $userQuery->get(['id']);
+
+        if($request->user_group){
+            $clicksQuery->where('user_group', '=', $request->user_group);
+        }
+        if($request->evolution){
+            $clicksQuery->where('evolution','=', $request->evolution);
+        }
+        if($request->time_range){
+            $clicksQuery->whereDate('clicked_at','>', Carbon::now()->subHours($request->time_range));
+        }
+        if($byUser){
+            $clicksQuery->whereIn('user_id',$users);
+        }
+
+        $overClicksQuery = clone $clicksQuery;
+        $causeQuery = clone $clicksQuery;
+        $firstClickQuery = clone $clicksQuery;
+        $overallClicks = $overClicksQuery->count();
+        $firstClick = $firstClickQuery->orderBy('clicked_at','ASC')->first();
+        $overallButtonClicks = $clicksQuery->groupBy(['button_id'])->orderBy('clicked_at','ASC')->get(['button', DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
+        $overallCauseClicks = $causeQuery->groupBy(['cause'])->orderBy('clicked_at','ASC')->get(['cause', DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
+
+        return response()->json([
+            'success' => true,
+            'users' => $users,
+            'overall' => array('button_clicks' => $overallButtonClicks, 'cause_clicks' => $overallCauseClicks, 'total' => $overallClicks, 'first_click' => $firstClick ? $firstClick['clicked_at'] : Carbon::now()),
+        ], 200);
     }
 }
