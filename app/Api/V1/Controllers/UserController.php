@@ -423,11 +423,11 @@ class UserController extends Controller
     private function shouldSwitchEvolution($userId): bool
     {
 
-        #get clicks count in past 3 days
-        $pivotDate = Carbon::now('UTC')->subDays(3);
-        $clicksMade = UserClicks::where('user_id', $userId)->where('clicked_at', '>', $pivotDate)->get();
+        #get clicks count in past 3 days || in dev to 1 Hour
+        $pivotDate = Carbon::now('UTC')->subHours(1);
+        $clicksMadeCount = UserClicks::where('user_id', $userId)->where('clicked_at', '>', $pivotDate)->count();
 
-        if ($clicksMade->count() < 5) {
+        if ($clicksMadeCount < 5) {
             return true;
         }
         return false;
@@ -449,7 +449,7 @@ class UserController extends Controller
         $preconditionCheckQuery = clone $clicksQuery;
         $precondition = $preconditionCheckQuery->first();
         if($precondition){
-            if((Carbon::now('UTC')->diffInDays($precondition['clicked_at'])) < 3){
+            if((Carbon::now('UTC')->diffInHours($precondition['clicked_at'])) < 3){
                 return null;
             }
             else{
