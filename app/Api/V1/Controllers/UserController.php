@@ -283,8 +283,8 @@ class UserController extends Controller
             $user = User::findOrFail($request->id);
             $userId = $request->id;
         }
-        $today = Carbon::today();
-        $yesterday = Carbon::yesterday();
+        $today = Carbon::today('UTC');
+        $yesterday = Carbon::yesterday('UTC');
         $firstClick = $user->clicks()->orderBy('clicked_at', 'ASC')->first();
 
         $todayClicks = $user->clicks()->whereDate('clicked_at', $today);
@@ -306,7 +306,7 @@ class UserController extends Controller
             'success' => true,
             'today' => array('button_clicks' => $todayButtonClicks, 'cause_clicks' => $todayCauseClicks, 'button_1_label' => $todayLabels['button1'], 'button_2_label' => $todayLabels['button2'], 'total' => $todayClicks->count()),
             'yesterday' => array('button_clicks' => $yesterdayButtonClicks, 'cause_clicks' => $yesterdayCauseClicks, 'button_1_label' => $yesterdayLabels['button1'], 'button_2_label' => $yesterdayLabels['button2'], 'total' => $yesterdayClicks->count()),
-            'overall' => array('button_clicks' => $overallButtonClicks, 'cause_clicks' => $overallCauseClicks, 'button_1_label' => $todayLabels['button1'], 'button_2_label' => $todayLabels['button2'], 'total' => $overallClicks->count(), 'first_click' => $firstClick ? $firstClick['clicked_at'] : Carbon::now()),
+            'overall' => array('button_clicks' => $overallButtonClicks, 'cause_clicks' => $overallCauseClicks, 'button_1_label' => $todayLabels['button1'], 'button_2_label' => $todayLabels['button2'], 'total' => $overallClicks->count(), 'first_click' => $firstClick ? $firstClick['clicked_at'] : Carbon::now('UTC')),
             'bluetooth_clicks' => $user->bluetoothClicks()->count(),
         ], 200);
     }
@@ -424,7 +424,7 @@ class UserController extends Controller
     {
 
         #get clicks count in past 3 days
-        $pivotDate = Carbon::now()->subDays(3);
+        $pivotDate = Carbon::now('UTC')->subDays(3);
         $clicksMade = UserClicks::where('user_id', $userId)->where('clicked_at', '>', $pivotDate)->get();
 
         if ($clicksMade->count() < 5) {
@@ -449,7 +449,7 @@ class UserController extends Controller
         $preconditionCheckQuery = clone $clicksQuery;
         $precondition = $preconditionCheckQuery->first();
         if($precondition){
-            if((Carbon::now()->diffInDays($precondition['clicked_at'])) < 3){
+            if((Carbon::now('UTC')->diffInDays($precondition['clicked_at'])) < 3){
                 return null;
             }
             else{
@@ -499,7 +499,7 @@ class UserController extends Controller
             $clicksQuery->where('evolution','=', $request->evolution);
         }
         if($request->time_range){
-            $clicksQuery->where('clicked_at','>', Carbon::now()->subHours($request->time_range));
+            $clicksQuery->where('clicked_at','>', Carbon::now('UTC')->subHours($request->time_range));
         }
         if($byUser){
             $clicksQuery->whereIn('user_id',$users);
@@ -540,7 +540,7 @@ class UserController extends Controller
             $clicksQuery->where('evolution','=', $request->evolution);
         }
         if($request->time_range){
-            $clicksQuery->whereDate('clicked_at','>', Carbon::now()->subHours($request->time_range));
+            $clicksQuery->whereDate('clicked_at','>', Carbon::now('UTC')->subHours($request->time_range));
         }
         if($byUser){
             $clicksQuery->whereIn('user_id',$users);
@@ -557,7 +557,7 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'users' => $users,
-            'overall' => array('button_clicks' => $overallButtonClicks, 'cause_clicks' => $overallCauseClicks, 'total' => $overallClicks, 'first_click' => $firstClick ? $firstClick['clicked_at'] : Carbon::now()),
+            'overall' => array('button_clicks' => $overallButtonClicks, 'cause_clicks' => $overallCauseClicks, 'total' => $overallClicks, 'first_click' => $firstClick ? $firstClick['clicked_at'] : Carbon::now('UTC')),
         ], 200);
     }
 }

@@ -26,7 +26,7 @@ class AccountController extends Controller
                 ]);
             }
             $user->is_verified = 1;
-            $user->email_verified_at = Carbon::now()->toDateTimeString();
+            $user->email_verified_at = Carbon::now('UTC')->toDateTimeString();
 
             if($user->save()){
                 UserVerification::where('token', $verification_code)->delete();
