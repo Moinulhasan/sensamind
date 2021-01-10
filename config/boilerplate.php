@@ -1,5 +1,7 @@
 <?php
 
+use App\Rules\IsValidPassword;
+
 return [
 
     // these options are related to the sign-up procedure
@@ -13,7 +15,12 @@ return [
         'validation_rules' => [
             'name' => 'required',
             'email' => 'required|email',
-            'password' => 'required'
+            'password' => [
+                'required',
+                'confirmed',
+                'string',
+                new IsValidPassword()
+            ]
         ]
     ],
 
@@ -24,7 +31,7 @@ return [
             'age' => 'required|numeric',
             'gender' => 'required|in:0,1,2',
             'role' => 'required|in:user,admin,super_admin',
-            'user_group' =>  'required|numeric'
+            'user_group' => 'required|numeric'
         ]
     ],
 
@@ -64,7 +71,12 @@ return [
         // here you can specify some validation rules for your password recovery procedure
         'validation_rules' => [
             'token' => 'required',
-            'password' => 'required|confirmed',
+            'password' => [
+                'required',
+                'confirmed',
+                'string',
+                new IsValidPassword()
+            ],
             'email' => 'required'
         ]
     ],
