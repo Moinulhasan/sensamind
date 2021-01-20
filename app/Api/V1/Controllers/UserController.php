@@ -446,6 +446,7 @@ class UserController extends Controller
         $clicksQuery = UserClicks::query();
         $clicksQuery->where('user_id', $user->id);
         $clicksQuery->where('evolution', $user->current_evolution);
+        $clicksQuery->orderBy('clicked_at','DESC');
         $preconditionCheckQuery = clone $clicksQuery;
         $precondition = $preconditionCheckQuery->first();
         if($precondition){
@@ -477,11 +478,11 @@ class UserController extends Controller
             $userQuery->where('gender','=',$request->gender);
         }
         if($request->age){
-            $byUser = true;
             $ageRange = preg_split("/[-\s:]/",$request->age);
             $minAge = $ageRange[0];
             $maxAge = $ageRange[1];
             if($minAge < 100 && $maxAge < 100) {
+                $byUser = true;
                 $userQuery->whereBetween('age',[$minAge,$maxAge]);
             }
         }
@@ -518,11 +519,11 @@ class UserController extends Controller
             $userQuery->where('gender','=',$request->gender);
         }
         if($request->age){
-            $byUser = true;
             $ageRange = preg_split("/[-\s:]/",$request->age);
             $minAge = $ageRange[0];
             $maxAge = $ageRange[1];
             if($minAge < 100 && $maxAge < 100) {
+                $byUser = true;
                 $userQuery->whereBetween('age',[$minAge,$maxAge]);
             }
         }
