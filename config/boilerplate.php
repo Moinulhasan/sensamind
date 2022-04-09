@@ -1,5 +1,7 @@
 <?php
 
+use App\Rules\IsValidPassword;
+
 return [
 
     // these options are related to the sign-up procedure
@@ -13,7 +15,12 @@ return [
         'validation_rules' => [
             'name' => 'required',
             'email' => 'required|email',
-            'password' => 'required'
+            'password' => [
+                'required',
+                'confirmed',
+                'string',
+                new IsValidPassword()
+            ]
         ]
     ],
 
@@ -23,7 +30,15 @@ return [
             'email' => 'required|email',
             'age' => 'required|numeric',
             'gender' => 'required|in:0,1,2',
-            'role' => 'required|in:user,admin'
+            'role' => 'required|in:user,admin,super_admin',
+            'user_group' => 'required|numeric'
+        ]
+    ],
+
+    'create_user_group' => [
+        'validation_rules' => [
+            'name' => 'required',
+            'description' => 'required'
         ]
     ],
 
@@ -56,7 +71,12 @@ return [
         // here you can specify some validation rules for your password recovery procedure
         'validation_rules' => [
             'token' => 'required',
-            'password' => 'required|confirmed',
+            'password' => [
+                'required',
+                'confirmed',
+                'string',
+                new IsValidPassword()
+            ],
             'email' => 'required'
         ]
     ],
@@ -77,17 +97,19 @@ return [
     'clicks' => [
         'validation_rules' => [
             'clicks' => 'required|array',
-            'button.*' => 'required',
-            'cause.*' => 'required',
-            'clicked_at.*' => 'required|date'
+            'clicks.*.button_id' => 'required',
+            'clicks.*.button' => 'required',
+            'clicks.*.cause' => 'required',
+            'clicks.*.clicked_at' => 'required|date'
         ]
     ],
 
     'bluetooth_clicks' => [
         'validation_rules' => [
             'clicks' => 'required|array',
-            'button.*' => 'required',
-            'clicked_at.*' => 'required|date'
+            'clicks.*.button_id' => 'required',
+            'clicks.*.button' => 'required',
+            'clicks.*.clicked_at' => 'required|date'
         ]
     ],
 
@@ -95,17 +117,6 @@ return [
         'validation_rules' => [
             'start_date' => 'date|required_with:end_date',
             'end_date' => 'date|required_with:start_date'
-        ]
-    ],
-
-    'create_label' => [
-        'validation_rules' => [
-            'button_label' => 'required',
-            'cause1' => 'required',
-            'cause2' => 'required',
-            'cause3' => 'required',
-            'cause4' => 'required',
-            'cause5' => 'required',
         ]
     ],
 

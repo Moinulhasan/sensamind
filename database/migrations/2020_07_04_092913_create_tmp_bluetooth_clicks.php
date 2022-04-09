@@ -15,12 +15,15 @@ class CreateTmpBluetoothClicks extends Migration
     {
         Schema::create('tmp_bluetooth_clicks', function (Blueprint $table) {
             $table->bigIncrements('id')->unsigned();
-            $table->integer('user_id')->unsigned();
-            $table->integer('evolution')->unsigned()->nullable();
+            $table->unsignedInteger('user_group');
+            $table->unsignedInteger('user_id');
+            $table->unsignedInteger('evolution')->nullable();
+            $table->unsignedInteger('button_id')->nullable();
             $table->string('button');
             $table->timestamp('clicked_at')->index('clicked_time');
             $table->timestamps();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('button_id')->references('id')->on('buttons')->onDelete('cascade');
         });
     }
 

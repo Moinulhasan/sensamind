@@ -15,14 +15,18 @@ class CreateUsersTable extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->increments('id')->unsigned();
+            $table->unsignedInteger('user_group')->default(1)->nullable();
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
             $table->string('zipcode');
-            $table->tinyInteger('age')->unsigned();
-            $table->tinyInteger('gender')->unsigned();
+            $table->unsignedTinyInteger('age');
+            $table->unsignedTinyInteger('gender');
             $table->string('argued',25);
-            $table->integer('current_evolution')->unsigned()->default(1)->nullable();
+            $table->unsignedTinyInteger('current_evolution')->default(1)->nullable();
+            $table->unsignedInteger('current_btn1')->default(1)->nullable();
+            $table->unsignedInteger('current_btn2')->default(2)->nullable();
+            $table->string('evolution_path')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('lock_out_code')->nullable();
             $table->boolean('failed_logins')->default(0);

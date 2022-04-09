@@ -144,7 +144,8 @@ return [
             'code' => ':code',
             'status_code' => ':status_code',
             'debug' => ':debug'
-        ]
+        ],
+        'success' => false
     ],
 
     /*

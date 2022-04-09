@@ -7,6 +7,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 use App\Notifications\PasswordReset;
+use Illuminate\Support\Str;
 
 class User extends Authenticatable implements JWTSubject
 {
@@ -18,7 +19,7 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password','zipcode','age','gender','argued'
+        'name', 'email','role', 'password','zipcode','age','gender','argued','user_group','current_evolution','current_btn1','current_btn2','evolution_path'
     ];
 
     /**
@@ -27,9 +28,15 @@ class User extends Authenticatable implements JWTSubject
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token','created_at','updated_at','email_verified_at','failed_logins','lock_out_code'
+        'password', 'remember_token','created_at','updated_at','email_verified_at','failed_logins','lock_out_code','current_btn1','current_btn2'
     ];
 
+    /**
+     * The relationships that should be sent along with model
+     * @var array
+     */
+
+    protected $with = ['userGroup','buttonOne','buttonTwo'];
 
     /**
      * Automatically creates hash for the user password.
@@ -73,10 +80,6 @@ class User extends Authenticatable implements JWTSubject
         $this->notify(new PasswordReset($token));
     }
 
-    public function evolutions()
-    {
-        return $this->hasOne(Evolutions::class);
-    }
     public function clicks()
     {
         return $this->hasMany(UserClicks::class);
@@ -88,5 +91,19 @@ class User extends Authenticatable implements JWTSubject
     public function bluetoothClicks()
     {
         return $this->hasMany(BluetoothClicks::class);
+    }
+    public function userGroup()
+    {
+        return $this->belongsTo(UserGroups::class,'user_group');
+    }
+
+    public function buttonOne()
+    {
+        return $this->belongsTo(Buttons::class,'current_btn1');
+    }
+
+    public function buttonTwo()
+    {
+        return $this->belongsTo(Buttons::class,'current_btn2');
     }
 }
