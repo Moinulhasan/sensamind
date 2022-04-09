@@ -142,6 +142,15 @@ class AppNotificationController extends Controller
 
     public function sendNotificationToUser(NotificationMessageRequest $request, JWTAuth $JWTAuth)
     {
+        $user = Auth::guard()->user();
+
+        if(!($user->role == 'admin' || $user->role == 'super_admin')){
+            return response()->json([
+                'success' => false,
+                'message' => 'Not enough privileges to perform operation.'
+            ], 403);
+        }
+
         $user_id = $request->user_id;
         $topic = $request->topic;
 
