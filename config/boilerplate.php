@@ -139,6 +139,20 @@ return [
         'validation_rules' => [
             'email' => 'required|email'
         ]
+    ],
+
+    'notification_token' => [
+        'validation_rules' => [
+            'registration_id' => 'required',
+            'type' => 'required'
+        ]
+    ],
+
+    'notification_message' => [
+        'validation_rules' => [
+            'title' => 'required|min:3',
+            'body' => 'required|min:5'
+        ]
     ]
 
 ];
