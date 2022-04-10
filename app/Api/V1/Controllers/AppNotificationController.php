@@ -79,37 +79,63 @@ class AppNotificationController extends Controller
 
         if ($resultData['failure'] > 0) {
             Log::error($resultData);
-            return false;
-        } else {
-            return true;
+            $resultsByToken = $resultData['results'];
+            $errorTokenIndices = [];
+            foreach ($resultsByToken as $key => $value) {
+                try{
+                    if ($value['error']) {
+                        $errorTokenIndices[] = $key;
+                    }
+                }
+                catch(\Exception $e){
+
+                }
+            }
+            return $errorTokenIndices;
         }
+
+        return true;
     }
 
     private function sendMessageToUser($details)
     {
         $url = 'https://fcm.googleapis.com/fcm/send';
-        $FcmTokens = UserDeviceTokens::where('user_id', '=', $details->user_id)->pluck('registration_id')->all();
+        $fcmTokens = UserDeviceTokens::where('user_id', '=', $details->user_id)->pluck('registration_id')->all();
+        if(count($fcmTokens) > 0){
+            $serverKey = config('services.firebase.key');
 
-        $serverKey = config('services.firebase.key');
+            $data = [
+                "registration_ids" => $fcmTokens,
+                "notification" => [
+                    "title" => $details->title,
+                    "body" => $details->body,
+                ]
+            ];
+            $encodedData = json_encode($data);
 
-        $data = [
-            "registration_ids" => $FcmTokens,
-            "notification" => [
-                "title" => $details->title,
-                "body" => $details->body,
-            ]
-        ];
-        $encodedData = json_encode($data);
+            $headers = [
+                'Authorization:key=' . $serverKey,
+                'Content-Type: application/json',
+            ];
 
-        $headers = [
-            'Authorization:key=' . $serverKey,
-            'Content-Type: application/json',
-        ];
+            $response = $this->_sendNotification($url, $headers, $encodedData);
 
-        if ($this->_sendNotification($url, $headers, $encodedData)) {
+            if (is_array($response)) {
+                $failedTokens = [];
+                foreach ($response as $errorIdx) {
+                    $failedTokens[] = $fcmTokens[$errorIdx];
+                }
+                try{
+                    if(count($failedTokens) > 0){
+                        UserDeviceTokens::whereIn('registration_id', $failedTokens)->delete();
+                    }
+                }
+                catch (\Exception $e){
+                    Log::error($e);
+                }
+            }
             return true;
         }
-
         return false;
     }
 
@@ -144,7 +170,7 @@ class AppNotificationController extends Controller
     {
         $user = Auth::guard()->user();
 
-        if(!($user->role == 'admin' || $user->role == 'super_admin')){
+        if (!($user->role == 'admin' || $user->role == 'super_admin')) {
             return response()->json([
                 'success' => false,
                 'message' => 'Not enough privileges to perform operation.'
