@@ -160,7 +160,7 @@ class UserController extends Controller
      * @param JWTAuth $JWTAuth
      * @return JsonResponse
      */
-    public function setClicks(ClicksRequest $request, JWTAuth $JWTAuth): JsonResponse
+    public function setClicks(ClicksRequest $request, JWTAuth $JWTAuth)
     {
         $user = Auth::guard()->user();
         $clicks = [];
@@ -420,7 +420,7 @@ class UserController extends Controller
      *
      */
 
-    private function shouldSwitchEvolution($userId): bool
+    private function shouldSwitchEvolution($userId)
     {
 
         #get clicks count in past 3 days || in dev to 1 Hour
