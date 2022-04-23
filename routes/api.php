@@ -38,7 +38,6 @@ $api->version('v1', function (Router $api) {
     $api->group(['prefix' => 'admin', 'middleware' => ['jwt.auth', 'auth.role:admin,super_admin']], function (Router $api) {
         $api->get('users', 'App\\Api\\V1\\Controllers\\UserController@allUsers');
         $api->post('users', 'App\\Api\\V1\\Controllers\\SignUpController@createUser');
-        $api->post('register-device-token', 'App\\Api\\V1\\Controllers\\AppNotificationController@updateDeviceToken');
         $api->post('send-notification-message', 'App\\Api\\V1\\Controllers\\AppNotificationController@sendNotificationToUser');
     });
 
@@ -53,6 +52,7 @@ $api->version('v1', function (Router $api) {
         $api->get('clicks', 'App\\Api\\V1\\Controllers\\UserController@getClicks');
         $api->get('statistics', 'App\\Api\\V1\\Controllers\\UserController@getMyStatistics');
         $api->get('bluetooth/statistics', 'App\\Api\\V1\\Controllers\\UserController@getBluetoothClickStats');
+        $api->post('register-device-token', 'App\\Api\\V1\\Controllers\\AppNotificationController@updateDeviceToken');
     });
 
     //Unused currently
