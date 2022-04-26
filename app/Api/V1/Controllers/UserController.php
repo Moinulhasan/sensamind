@@ -424,10 +424,10 @@ class UserController extends Controller
     {
 
         #get clicks count in past 3 days || in dev to 1 Hour
-        $pivotDate = Carbon::now('UTC')->subHours(1);
+        $pivotDate = Carbon::now('UTC')->subDays(2);
         $clicksMadeCount = UserClicks::where('user_id', $userId)->where('clicked_at', '>', $pivotDate)->count();
 
-        if ($clicksMadeCount < 5) {
+        if ($clicksMadeCount < 3) {
             return true;
         }
         return false;
