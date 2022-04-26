@@ -2734,7 +2734,7 @@
 					]
 				},
 				"url": {
-					"raw": "{{url}}/api/admin/register-device-token",
+					"raw": "{{url}}/api/user/register-device-token",
 					"host": [
 						"{{url}}"
 					],
@@ -2772,7 +2772,7 @@
 							]
 						},
 						"url": {
-							"raw": "localhost:8000/api/admin/register-device-token",
+							"raw": "localhost:8000/api/user/register-device-token",
 							"host": [
 								"localhost"
 							],

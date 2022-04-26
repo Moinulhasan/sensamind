@@ -139,7 +139,7 @@ class UserController extends Controller
         $user->fill($params);
 
         if ($user->save()) {
-            $newUser = User::where('id','=',$user->id)->with(['userGroup','buttonOne','buttonTwo'])->first();
+            $newUser = User::where('id', '=', $user->id)->with(['userGroup', 'buttonOne', 'buttonTwo'])->first();
             return response()->json([
                 'success' => true,
                 'message' => 'User details updated successfully',
@@ -176,10 +176,10 @@ class UserController extends Controller
             if ($currentEvolution > 0 && $currentEvolution < 4) {
                 if ($this->shouldSwitchEvolution($user->id)) {
                     $maxClickedButton = $this->getMaxClickedButton($user);
-                    if ($maxClickedButton && $maxClickedButton->branch1 && $maxClickedButton->branch2){
-                        $btn1 = Buttons::where('user_group','=',$user->user_group)->where('node','=',$maxClickedButton->branch1)->first();
-                        $btn2 = Buttons::where('user_group','=',$user->user_group)->where('node','=',$maxClickedButton->branch2)->first();
-                        $evolutionPath = $user->evolution_path?$user->evolution_path."-"."E".$currentEvolution.":B".$maxClickedButton->id:"E1:B".$maxClickedButton->id;
+                    if ($maxClickedButton && $maxClickedButton->branch1 && $maxClickedButton->branch2) {
+                        $btn1 = Buttons::where('user_group', '=', $user->user_group)->where('node', '=', $maxClickedButton->branch1)->first();
+                        $btn2 = Buttons::where('user_group', '=', $user->user_group)->where('node', '=', $maxClickedButton->branch2)->first();
+                        $evolutionPath = $user->evolution_path ? $user->evolution_path . "-" . "E" . $currentEvolution . ":B" . $maxClickedButton->id : "E1:B" . $maxClickedButton->id;
                         $newCurrentEvolution = $currentEvolution + 1;
 
                         $updateFields = [
@@ -190,8 +190,8 @@ class UserController extends Controller
                         ];
 
                         $user->fill($updateFields);
-                        if($user->save()){
-                            $newUser = User::where('id','=',$user->id)->with(['userGroup','buttonOne','buttonTwo'])->first();
+                        if ($user->save()) {
+                            $newUser = User::where('id', '=', $user->id)->with(['userGroup', 'buttonOne', 'buttonTwo'])->first();
                             return response()->json([
                                 'success' => true,
                                 'message' => 'Click(s) saved successfully',
@@ -275,7 +275,7 @@ class UserController extends Controller
         $user = Auth::guard()->user();
         $userId = $user->id;
 
-        if($user->role != 'user' && is_null($request->id)){
+        if ($user->role != 'user' && is_null($request->id)) {
             return $this->getStatisticsByFilter($request);
         }
 
@@ -446,22 +446,20 @@ class UserController extends Controller
         $clicksQuery = UserClicks::query();
         $clicksQuery->where('user_id', $user->id);
         $clicksQuery->where('evolution', $user->current_evolution);
-        $clicksQuery->orderBy('clicked_at','DESC');
+        $clicksQuery->orderBy('clicked_at', 'DESC');
         $preconditionCheckQuery = clone $clicksQuery;
         $precondition = $preconditionCheckQuery->first();
-        if($precondition){
-            if((Carbon::now('UTC')->diffInHours($precondition['clicked_at'])) < 3){
+        if ($precondition) {
+            if ((Carbon::now('UTC')->diffInHours($precondition['clicked_at'])) < 3) {
                 return null;
-            }
-            else{
+            } else {
                 $clicksQuery->groupBy(['button_id']);
                 $clicksQuery->orderBy('total', 'DESC');
                 $maxButtonIdAndCount = $clicksQuery->first(['button_id', DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
-                $maxClickedButton = Buttons::where('id',$maxButtonIdAndCount['button_id'])->first();
+                $maxClickedButton = Buttons::where('id', $maxButtonIdAndCount['button_id'])->first();
                 return $maxClickedButton;
             }
-        }
-        else {
+        } else {
             return null;
         }
 
@@ -473,37 +471,42 @@ class UserController extends Controller
         $userQuery = User::query();
         $byUser = false;
 
-        if($request->gender && $request->gender < 3){
-            $byUser = true;
-            $userQuery->where('gender','=',$request->gender);
+        if ($request->id) {
+            $userQuery->where('id', '=', $request->id);
         }
-        if($request->age){
-            $ageRange = preg_split("/[-\s:]/",$request->age);
-            $minAge = $ageRange[0];
-            $maxAge = $ageRange[1];
-            if($minAge < 100 && $maxAge < 100) {
+        else {
+            if ($request->gender && $request->gender < 3) {
                 $byUser = true;
-                $userQuery->whereBetween('age',[$minAge,$maxAge]);
+                $userQuery->where('gender', '=', $request->gender);
             }
-        }
-        if($request->zipcode && strlen($request->zipcode) > 0){
-            $byUser = true;
-            $userQuery->whereRaw("UPPER(zipcode) LIKE '".strtoupper($request->zipcode)."%'");
+            if ($request->age) {
+                $ageRange = preg_split("/[-\s:]/", $request->age);
+                $minAge = $ageRange[0];
+                $maxAge = $ageRange[1];
+                if ($minAge < 100 && $maxAge < 100) {
+                    $byUser = true;
+                    $userQuery->whereBetween('age', [$minAge, $maxAge]);
+                }
+            }
+            if ($request->zipcode && strlen($request->zipcode) > 0) {
+                $byUser = true;
+                $userQuery->whereRaw("UPPER(zipcode) LIKE '" . strtoupper($request->zipcode) . "%'");
+            }
         }
 
         $users = $userQuery->get(['id']);
 
-        if($request->user_group){
+        if ($request->user_group) {
             $clicksQuery->where('user_group', '=', $request->user_group);
         }
-        if($request->evolution){
-            $clicksQuery->where('evolution','=', $request->evolution);
+        if ($request->evolution) {
+            $clicksQuery->where('evolution', '=', $request->evolution);
         }
-        if($request->time_range){
-            $clicksQuery->where('clicked_at','>', Carbon::now('UTC')->subHours($request->time_range));
+        if ($request->time_range) {
+            $clicksQuery->where('clicked_at', '>', Carbon::now('UTC')->subHours($request->time_range));
         }
-        if($byUser){
-            $clicksQuery->whereIn('user_id',$users);
+        if ($byUser) {
+            $clicksQuery->whereIn('user_id', $users);
         }
         return $clicksQuery->get();
     }
@@ -514,46 +517,46 @@ class UserController extends Controller
         $userQuery = User::query();
         $byUser = false;
 
-        if($request->gender && $request->gender < 3){
+        if ($request->gender && $request->gender < 3) {
             $byUser = true;
-            $userQuery->where('gender','=',$request->gender);
+            $userQuery->where('gender', '=', $request->gender);
         }
-        if($request->age){
-            $ageRange = preg_split("/[-\s:]/",$request->age);
+        if ($request->age) {
+            $ageRange = preg_split("/[-\s:]/", $request->age);
             $minAge = $ageRange[0];
             $maxAge = $ageRange[1];
-            if($minAge < 100 && $maxAge < 100) {
+            if ($minAge < 100 && $maxAge < 100) {
                 $byUser = true;
-                $userQuery->whereBetween('age',[$minAge,$maxAge]);
+                $userQuery->whereBetween('age', [$minAge, $maxAge]);
             }
         }
-        if($request->zipcode && strlen($request->zipcode) > 0){
+        if ($request->zipcode && strlen($request->zipcode) > 0) {
             $byUser = true;
-            $userQuery->whereRaw("UPPER(zipcode) LIKE '". strtoupper($request->zipcode)."%'");
+            $userQuery->whereRaw("UPPER(zipcode) LIKE '" . strtoupper($request->zipcode) . "%'");
         }
 
         $users = $userQuery->get(['id']);
 
-        if($request->user_group){
+        if ($request->user_group) {
             $clicksQuery->where('user_group', '=', $request->user_group);
         }
-        if($request->evolution){
-            $clicksQuery->where('evolution','=', $request->evolution);
+        if ($request->evolution) {
+            $clicksQuery->where('evolution', '=', $request->evolution);
         }
-        if($request->time_range){
-            $clicksQuery->whereDate('clicked_at','>', Carbon::now('UTC')->subHours($request->time_range));
+        if ($request->time_range) {
+            $clicksQuery->whereDate('clicked_at', '>', Carbon::now('UTC')->subHours($request->time_range));
         }
-        if($byUser){
-            $clicksQuery->whereIn('user_id',$users);
+        if ($byUser) {
+            $clicksQuery->whereIn('user_id', $users);
         }
 
         $overClicksQuery = clone $clicksQuery;
         $causeQuery = clone $clicksQuery;
         $firstClickQuery = clone $clicksQuery;
         $overallClicks = $overClicksQuery->count();
-        $firstClick = $firstClickQuery->orderBy('clicked_at','ASC')->first();
-        $overallButtonClicks = $clicksQuery->groupBy(['button_id'])->orderBy('clicked_at','ASC')->get(['button', DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
-        $overallCauseClicks = $causeQuery->groupBy(['cause'])->orderBy('clicked_at','ASC')->get(['cause', DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
+        $firstClick = $firstClickQuery->orderBy('clicked_at', 'ASC')->first();
+        $overallButtonClicks = $clicksQuery->groupBy(['button_id'])->orderBy('clicked_at', 'ASC')->get(['button', DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
+        $overallCauseClicks = $causeQuery->groupBy(['cause'])->orderBy('clicked_at', 'ASC')->get(['cause', DB::raw('CAST(count(*) AS UNSIGNED) as total')]);
 
         return response()->json([
             'success' => true,
