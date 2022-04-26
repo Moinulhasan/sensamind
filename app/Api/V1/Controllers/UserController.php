@@ -255,7 +255,7 @@ class UserController extends Controller
     public function getClicks(UserClicksRequest $request, JWTAuth $JWTAuth)
     {
         $user = Auth::guard()->user();
-        if ($user->role !== 'user') {
+        if ($user->role !== 'user' && is_null($request->id)) {
             $clicks = $this->getFilteredClicks($request);
             return response()->json([
                 'success' => true,
@@ -471,27 +471,22 @@ class UserController extends Controller
         $userQuery = User::query();
         $byUser = false;
 
-        if ($request->id) {
-            $userQuery->where('id', '=', $request->id);
+        if ($request->gender && $request->gender < 3) {
+            $byUser = true;
+            $userQuery->where('gender', '=', $request->gender);
         }
-        else {
-            if ($request->gender && $request->gender < 3) {
+        if ($request->age) {
+            $ageRange = preg_split("/[-\s:]/", $request->age);
+            $minAge = $ageRange[0];
+            $maxAge = $ageRange[1];
+            if ($minAge < 100 && $maxAge < 100) {
                 $byUser = true;
-                $userQuery->where('gender', '=', $request->gender);
+                $userQuery->whereBetween('age', [$minAge, $maxAge]);
             }
-            if ($request->age) {
-                $ageRange = preg_split("/[-\s:]/", $request->age);
-                $minAge = $ageRange[0];
-                $maxAge = $ageRange[1];
-                if ($minAge < 100 && $maxAge < 100) {
-                    $byUser = true;
-                    $userQuery->whereBetween('age', [$minAge, $maxAge]);
-                }
-            }
-            if ($request->zipcode && strlen($request->zipcode) > 0) {
-                $byUser = true;
-                $userQuery->whereRaw("UPPER(zipcode) LIKE '" . strtoupper($request->zipcode) . "%'");
-            }
+        }
+        if ($request->zipcode && strlen($request->zipcode) > 0) {
+            $byUser = true;
+            $userQuery->whereRaw("UPPER(zipcode) LIKE '" . strtoupper($request->zipcode) . "%'");
         }
 
         $users = $userQuery->get(['id']);
