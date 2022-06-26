@@ -8,10 +8,10 @@ use App\Api\V1\Requests\ClicksRequest;
 use App\Api\V1\Requests\SignUpRequest;
 use App\Api\V1\Requests\SpecificResourceRequest;
 use App\Api\V1\Requests\UserClicksRequest;
-use App\BluetoothClicks;
-use App\Buttons;
-use App\User;
-use App\UserClicks;
+use App\Models\BluetoothClicks;
+use App\Models\Buttons;
+use App\Models\User;
+use App\Models\UserClicks;
 use Carbon\Carbon;
 use DB;
 use Illuminate\Database\Eloquent\Builder;
@@ -283,8 +283,8 @@ class UserController extends Controller
             $user = User::findOrFail($request->id);
             $userId = $request->id;
         }
-        $today = Carbon::today('UTC');
-        $yesterday = Carbon::yesterday('UTC');
+        $today = Carbon::today('PST8PDT');
+        $yesterday = Carbon::yesterday('PST8PDT');
         $firstClick = $user->clicks()->orderBy('clicked_at', 'ASC')->first();
 
         $todayClicks = $user->clicks()->whereDate('clicked_at', $today);
@@ -306,7 +306,7 @@ class UserController extends Controller
             'success' => true,
             'today' => array('button_clicks' => $todayButtonClicks, 'cause_clicks' => $todayCauseClicks, 'button_1_label' => $todayLabels['button1'], 'button_2_label' => $todayLabels['button2'], 'total' => $todayClicks->count()),
             'yesterday' => array('button_clicks' => $yesterdayButtonClicks, 'cause_clicks' => $yesterdayCauseClicks, 'button_1_label' => $yesterdayLabels['button1'], 'button_2_label' => $yesterdayLabels['button2'], 'total' => $yesterdayClicks->count()),
-            'overall' => array('button_clicks' => $overallButtonClicks, 'cause_clicks' => $overallCauseClicks, 'button_1_label' => $todayLabels['button1'], 'button_2_label' => $todayLabels['button2'], 'total' => $overallClicks->count(), 'first_click' => $firstClick ? $firstClick['clicked_at'] : Carbon::now('UTC')),
+            'overall' => array('button_clicks' => $overallButtonClicks, 'cause_clicks' => $overallCauseClicks, 'button_1_label' => $todayLabels['button1'], 'button_2_label' => $todayLabels['button2'], 'total' => $overallClicks->count(), 'first_click' => $firstClick ? $firstClick['clicked_at'] : Carbon::now('PST8PDT')),
             'bluetooth_clicks' => $user->bluetoothClicks()->count(),
         ], 200);
     }
@@ -424,7 +424,7 @@ class UserController extends Controller
     {
 
         #get clicks count in past 3 days || in dev to 1 Hour
-        $pivotDate = Carbon::now('UTC')->subDays(2);
+        $pivotDate = Carbon::now('PST8PDT')->subDays(2);
         $clicksMadeCount = UserClicks::where('user_id', $userId)->where('clicked_at', '>', $pivotDate)->count();
 
         if ($clicksMadeCount < 3) {
@@ -450,7 +450,7 @@ class UserController extends Controller
         $preconditionCheckQuery = clone $clicksQuery;
         $precondition = $preconditionCheckQuery->first();
         if ($precondition) {
-            if ((Carbon::now('UTC')->diffInHours($precondition['clicked_at'])) < 3) {
+            if ((Carbon::now('PST8PDT')->diffInHours($precondition['clicked_at'])) < 3) {
                 return null;
             } else {
                 $clicksQuery->groupBy(['button_id']);
@@ -498,7 +498,7 @@ class UserController extends Controller
             $clicksQuery->where('evolution', '=', $request->evolution);
         }
         if ($request->time_range) {
-            $clicksQuery->where('clicked_at', '>', Carbon::now('UTC')->subHours($request->time_range));
+            $clicksQuery->where('clicked_at', '>', Carbon::now('PST8PDT')->subHours($request->time_range));
         }
         if ($byUser) {
             $clicksQuery->whereIn('user_id', $users);
@@ -539,7 +539,7 @@ class UserController extends Controller
             $clicksQuery->where('evolution', '=', $request->evolution);
         }
         if ($request->time_range) {
-            $clicksQuery->whereDate('clicked_at', '>', Carbon::now('UTC')->subHours($request->time_range));
+            $clicksQuery->whereDate('clicked_at', '>', Carbon::now('PST8PDT')->subHours($request->time_range));
         }
         if ($byUser) {
             $clicksQuery->whereIn('user_id', $users);
@@ -556,7 +556,7 @@ class UserController extends Controller
         return response()->json([
             'success' => true,
             'users' => $users,
-            'overall' => array('button_clicks' => $overallButtonClicks, 'cause_clicks' => $overallCauseClicks, 'total' => $overallClicks, 'first_click' => $firstClick ? $firstClick['clicked_at'] : Carbon::now('UTC')),
+            'overall' => array('button_clicks' => $overallButtonClicks, 'cause_clicks' => $overallCauseClicks, 'total' => $overallClicks, 'first_click' => $firstClick ? $firstClick['clicked_at'] : Carbon::now('PST8PDT')),
         ], 200);
     }
 }

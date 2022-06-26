@@ -3,14 +3,15 @@
 namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\CreateUserRequest;
-use App\Buttons;
+use App\Models\Buttons;
 use App\Mail\NewAccountByAdmin;
 use App\Mail\VerifyEmail;
-use App\UserGroups;
-use App\UserVerification;
+use App\Models\UserGroups;
+use App\Models\UserVerification;
 use Config;
+use Illuminate\Support\Str;
 use Auth;
-use App\User;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -39,7 +40,7 @@ class SignUpController extends Controller
         }
 
         if(!Config::get('boilerplate.sign_up.release_token')) {
-            $verification_code = str_random(40);
+            $verification_code =Str::random(40);
             $verificationParam = array('user_id'=>$user->id,'token'=>$verification_code);
             $verification = new UserVerification($verificationParam);
 
@@ -87,7 +88,7 @@ class SignUpController extends Controller
             $button2 = $userGroupDetails[1]['id'];
             $newUser->current_btn1 = $button1;
             $newUser->current_btn2 = $button2;
-            $password = str_random(12);
+            $password =Str::random(12);
             $newUser->password = $password;
 
             if(!$newUser->save()) {
@@ -97,7 +98,7 @@ class SignUpController extends Controller
                 ], 422);
             }
 
-            $verification_code = str_random(40);
+            $verification_code =Str::random(40);
             $verificationParam = array('user_id'=>$newUser->id,'token'=>$verification_code);
             $verification = new UserVerification($verificationParam);
 

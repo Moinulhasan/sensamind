@@ -5,10 +5,10 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\DeviceNotificationTokenRequest;
 use App\Api\V1\Requests\NotificationMessageRequest;
 use App\Http\Controllers\Controller;
-use App\UserDeviceTokens;
+use App\Models\UserDeviceTokens;
 use Auth;
 use Illuminate\Http\Request;
-use App\User;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\JWTAuth;
 

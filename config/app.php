@@ -27,8 +27,9 @@ return [
 
     'env' => env('APP_ENV', 'production'),
 
-    'base_url' => env('BASE_APP_URL',"https://members.sensamind.com"),
+      'base_url' => env('BASE_APP_URL',"https://members.sensamind.com"),
     'admin_mail' => env('ADMIN_EMAIL_ID',"support@sensamind.com"),
+
 
     /*
     |--------------------------------------------------------------------------
@@ -54,7 +55,7 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => env('APP_URL', 'https://api.sensamind.com'),
 
     /*
     |--------------------------------------------------------------------------
@@ -67,7 +68,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'PST8PDT',
 
     /*
     |--------------------------------------------------------------------------
@@ -152,9 +153,10 @@ return [
         /*
          * Package Service Providers...
          */
+       
         Tymon\JWTAuth\Providers\LaravelServiceProvider::class,
         Dingo\Api\Provider\LaravelServiceProvider::class,
-        Barryvdh\Cors\ServiceProvider::class,
+       
 
         /*
          * Application Service Providers...

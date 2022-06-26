@@ -16,8 +16,9 @@ class Kernel extends HttpKernel
      * @var array
      */
     protected $middleware = [
+        \Fruitcake\Cors\HandleCors::class,
         \Illuminate\Foundation\Http\Middleware\CheckForMaintenanceMode::class,
-        HandleCors::class,
+       
     ];
 
     /**
@@ -33,6 +34,7 @@ class Kernel extends HttpKernel
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             \App\Http\Middleware\VerifyCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
+        
         ],
 
         'api' => [
@@ -57,6 +59,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'auth.role' => \App\Http\Middleware\RoleAuthorization::class,
         'jwt.auth' => \Tymon\JWTAuth\Http\Middleware\Authenticate::class,
-        'jwt.refresh' => RefreshToken::class
+        'jwt.refresh' => RefreshToken::class,
+        'cors' => \Barryvdh\Cors\Middleware\HandleCors::class,
     ];
 }

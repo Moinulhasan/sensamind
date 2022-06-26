@@ -4,15 +4,16 @@ namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\ContactRequest;
 use App\Api\V1\Requests\SubscriptionRequest;
-use App\ContactFormSubmission;
+use App\Models\ContactFormSubmission;
 use App\Http\Controllers\Controller;
 use App\Mail\NewContact;
 use App\Mail\SubscriptionSuccess;
 use App\Mail\VerifyEmail;
-use App\MailingList;
-use App\UserVerification;
+use App\Models\MailingList;
+use App\Models\UserVerification;
 use Carbon\Carbon;
-use App\User;
+use App\Models\User;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Tymon\JWTAuth\JWTAuth;
@@ -23,7 +24,8 @@ class ContactsController extends Controller
     {
 
         $token = Hash::make($request->email);
-        $subToken = $token.str_random(30);
+        
+        $subToken = $token.Str::random(40);
         $params = ['email' => $request->email, 'subscription_token' => $subToken];
         if(MailingList::where('email',$request->email)->first()){
             return response()->json([

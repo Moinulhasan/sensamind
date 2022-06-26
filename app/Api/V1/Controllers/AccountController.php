@@ -4,9 +4,9 @@ namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\VerifyAccountRequest;
 use App\Http\Controllers\Controller;
-use App\UserVerification;
+use App\Models\UserVerification;
 use Carbon\Carbon;
-use App\User;
+use App\Models\User;
 use Tymon\JWTAuth\JWTAuth;
 
 class AccountController extends Controller
@@ -26,7 +26,7 @@ class AccountController extends Controller
                 ]);
             }
             $user->is_verified = 1;
-            $user->email_verified_at = Carbon::now('UTC')->toDateTimeString();
+            $user->email_verified_at = Carbon::now('PST8PDT')->toDateTimeString();
 
             if($user->save()){
                 UserVerification::where('token', $verification_code)->delete();

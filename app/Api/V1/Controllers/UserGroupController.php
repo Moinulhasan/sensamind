@@ -5,9 +5,9 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\AdminRequest;
 use App\Api\V1\Requests\SpecificResourceRequest;
 use App\Api\V1\Requests\UserGroupRequest;
-use App\Buttons;
+use App\Models\Buttons;
 use App\Http\Controllers\Controller;
-use App\UserGroups;
+use App\Models\UserGroups;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 

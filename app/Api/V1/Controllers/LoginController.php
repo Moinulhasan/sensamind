@@ -3,7 +3,7 @@
 namespace App\Api\V1\Controllers;
 
 use App\Mail\UnlockAccount;
-use App\User;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Mail;
 use Tymon\JWTAuth\JWTAuth;
@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use App\Api\V1\Requests\LoginRequest;
 use Tymon\JWTAuth\Exceptions\JWTException;
 use Auth;
+use Illuminate\Support\Str;
 use Config;
 
 class LoginController extends Controller
@@ -47,7 +48,7 @@ class LoginController extends Controller
         }
         if ($loginAttempts == $maxLoginAttempts) {
             $attemptedUser->failed_logins = $maxLoginAttempts + 1;
-            $lockCode = str_random(40);
+            $lockCode = Str::random(40);
             $attemptedUser->lock_out_code = $lockCode;
             $attemptedUser->save();
 
