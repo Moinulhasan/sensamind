@@ -5,11 +5,12 @@
     "license": "MIT",
     "type": "project",
     "require": {
-        "php": ">=7.4.19",
+        "php": ">=7.4",
         "dingo/api": "^3",
         "fideloper/proxy": "^4.0",
         "fruitcake/laravel-cors": "^2.2",
         "guzzlehttp/guzzle": "^7.0.1",
+        "kreait/laravel-firebase": "*",
         "laravel/framework": "^8.0",
         "laravel/legacy-factories": "^1.3",
         "laravel/tinker": "^2.0",

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ChatController;
 use Dingo\Api\Routing\Router;
 
 /** @var Router $api */
@@ -63,3 +64,7 @@ $api->version('v1', function (Router $api) {
     });*/
 
 });
+
+
+Route::post('/test-firebase',[ChatController::class,'index']);
+Route::post('send-message',[ChatController::class,'createMessage']);
