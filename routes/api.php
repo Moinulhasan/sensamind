@@ -62,9 +62,13 @@ $api->version('v1', function (Router $api) {
         $api->post('unsubscribe', 'App\\Api\\V1\\Controllers\\ContactsController@unSubscribe');
         $api->post('/', 'App\\Api\\V1\\Controllers\\ContactsController@contactDetails');
     });*/
-
+    Route::group(['middleware' => 'jwt.auth'], function () {
+        Route::post('send-message', [ChatController::class, 'createMessage']);
+        Route::get('user-chat-list', [ChatController::class, 'getUserChatList']);
+        Route::get('sing-user-message/{id}', [ChatController::class, 'getSingeUserMessage']);
+    });
 });
 
 
-Route::post('/test-firebase',[ChatController::class,'index']);
-Route::post('send-message',[ChatController::class,'createMessage']);
+Route::post('/test-firebase', [ChatController::class, 'index']);
+

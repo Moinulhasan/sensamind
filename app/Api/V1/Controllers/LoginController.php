@@ -3,7 +3,7 @@
 namespace App\Api\V1\Controllers;
 
 use App\Mail\UnlockAccount;
-use App\Models\User;
+use App\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Mail;
 use Tymon\JWTAuth\JWTAuth;

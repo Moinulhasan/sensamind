@@ -4,9 +4,9 @@ namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\VerifyAccountRequest;
 use App\Http\Controllers\Controller;
-use App\Models\UserVerification;
+use App\UserVerification;
 use Carbon\Carbon;
-use App\Models\User;
+use App\User;
 use Tymon\JWTAuth\JWTAuth;
 
 class AccountController extends Controller

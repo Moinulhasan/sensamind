@@ -3,15 +3,14 @@
 namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\CreateUserRequest;
-use App\Models\Buttons;
+use App\Buttons;
 use App\Mail\NewAccountByAdmin;
 use App\Mail\VerifyEmail;
-use App\Models\UserGroups;
-use App\Models\UserVerification;
+use App\User;
+use App\UserVerification;
 use Config;
 use Illuminate\Support\Str;
 use Auth;
-use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -45,22 +44,22 @@ class SignUpController extends Controller
             $verification = new UserVerification($verificationParam);
 
             if($verification->save()){
-                try{
-                    $this->sendVerificationEmail($user,$verification_code);
-                }
-                catch (\Exception $e) {
-                    return response()->json([
-                        'success' => false,
-                        'summary' => $e->getMessage(),
-                        'error' => array('message'=>'Couldn\'t send verification mail. Try again')
-                    ], 422);
-                }
+//                try{
+//                    $this->sendVerificationEmail($user,$verification_code);
+//                }
+//                catch (\Exception $e) {
+//                    return response()->json([
+//                        'success' => false,
+//                        'summary' => $e->getMessage(),
+//                        'error' => array('message'=>'Couldn\'t send verification mail. Try again')
+//                    ], 422);
+//                }
             }
 
-            return response()->json([
-                'success' => true,
-                'message' => 'Account created successfully. Kindly verify your email to start using the app'
-            ], 201);
+//            return response()->json([
+//                'success' => true,
+//                'message' => 'Account created successfully. Kindly verify your email to start using the app'
+//            ], 201);
         }
 
         $token = $JWTAuth->fromUser($user);

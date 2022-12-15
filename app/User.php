@@ -106,4 +106,16 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->belongsTo(Buttons::class,'current_btn2');
     }
+
+    public function chatGroup()
+    {
+        return $this->hasMany(ChatGroup::class);
+    }
+
+    public function chatRoom()
+    {
+        return $this->belongsToMany(User::class, 'chat_groups','user_one','user_two')
+            ->withPivot('id')
+            ->withTimestamps();
+    }
 }

@@ -15,12 +15,12 @@ return [
         'validation_rules' => [
             'name' => 'required',
             'email' => 'required|email',
-            'password' => [
-                'required',
-                'confirmed',
-                'string',
-                new IsValidPassword()
-            ]
+//            'password' => [
+//                'required',
+//                'confirmed',
+//                'string',
+//                new IsValidPassword()
+//            ]
         ]
     ],
 
