@@ -5,7 +5,7 @@ namespace App\Api\V1\Controllers;
 use App\Api\V1\Requests\DeviceNotificationTokenRequest;
 use App\Api\V1\Requests\NotificationMessageRequest;
 use App\Http\Controllers\Controller;
-use App\Models\UserDeviceTokens;
+use App\UserDeviceTokens;
 use Auth;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -97,8 +97,9 @@ class AppNotificationController extends Controller
         return true;
     }
 
-    private function sendMessageToUser($details)
+    public function sendMessageToUser($details)
     {
+
         $url = 'https://fcm.googleapis.com/fcm/send';
         $fcmTokens = UserDeviceTokens::where('user_id', '=', $details->user_id)->pluck('registration_id')->all();
         if(count($fcmTokens) > 0){
@@ -139,7 +140,7 @@ class AppNotificationController extends Controller
         return false;
     }
 
-    private function sendMessageToTopicSubscribers($details)
+    public function sendMessageToTopicSubscribers($details)
     {
         $url = 'https://fcm.googleapis.com/fcm/send';
         $serverKey = config('services.firebase.key');

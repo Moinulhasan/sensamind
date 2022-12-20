@@ -26,7 +26,7 @@ class ChatRequest extends FormRequest
         return [
             'receiver_id' => 'required|integer',
             'message' => 'required|string',
-
+            'attachment'=>'nullable|mimes:jpeg,png,gif,svg,jpg,mp4,mov,ogg,qt|max:100000'
         ];
     }
 }

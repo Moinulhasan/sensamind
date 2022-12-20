@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Api\V1\Controllers\AppNotificationController;
 use App\ChatGroup;
 use App\Http\Requests\ChatRequest;
 use App\Http\Resources\messageResource;
+use App\UserDeviceTokens;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Kreait\Firebase\Database;
 use Tymon\JWTAuth\Facades\JWTAuth;
 
@@ -49,11 +52,18 @@ class ChatController extends Controller
 
     public function createMessage(ChatRequest $request)
     {
+        $group = $this->createGroup($request->all());
+        $file = '';
+        if ($request->hasFile('attachment')) {
+            $fileTemp = $request->attachment->store('/attachment/' . $group->id,'public');
+            $file = asset('/storage/' . $fileTemp);
+        }
         $data = [
             'message' => $request->message,
             'receiver_id' => $request->receiver_id,
             'sender_id' => JWTAuth::user()->id,
-            'group_id' => $this->createGroup($request->all()),
+            'group_id' => $group,
+            'attachment' => $file,
             'created_at' => Carbon::now(),
             'updated_at' => ''
         ];
@@ -61,6 +71,12 @@ class ChatController extends Controller
             ->push($data);
 
         if ($output) {
+            $notification_formation = [
+                'user_id' => $request->receiver_id,
+                'title' => JWTAuth::user()->name . ' sent you a new message',
+                'body' => $output->getValue()
+            ];
+            $this->notificationToUser($notification_formation);
             return ['status' => true, 'message' => 'Message send successfully'];
         } else {
             return ['status' => false, 'message' => 'something went wrong !'];
@@ -68,13 +84,13 @@ class ChatController extends Controller
     }
 
 
-    public function getSingeUserMessage(Request $request,$id)
+    public function getSingeUserMessage(Request $request, $id)
     {
         $output = $this->database->getReference($this->table)
             ->orderByChild('group_id')
             ->equalTo((int)$id)
             ->getSnapshot();
-      return ['status'=>true,'data'=>messageResource::collection($output->getValue())];
+        return ['status' => true, 'data' => messageResource::collection($output->getValue())];
     }
 
 
@@ -127,5 +143,47 @@ class ChatController extends Controller
         } else {
             return ['status' => true, 'data' => array()];
         }
+    }
+
+    public function notificationToUser($details)
+    {
+
+        $url = 'https://fcm.googleapis.com/fcm/send';
+        $fcmTokens = UserDeviceTokens::where('user_id', '=', $details['user_id'])->pluck('registration_id')->all();
+        if (count($fcmTokens) > 0) {
+            $serverKey = config('services.firebase.key');
+
+            $data = [
+                "registration_ids" => $fcmTokens,
+                "notification" => [
+                    "title" => $details['title'],
+                    "body" => $details['body'],
+                ]
+            ];
+            $encodedData = json_encode($data);
+
+            $headers = [
+                'Authorization:key=' . $serverKey,
+                'Content-Type: application/json',
+            ];
+
+            $response = $this->_sendNotification($url, $headers, $encodedData);
+
+            if (is_array($response)) {
+                $failedTokens = [];
+                foreach ($response as $errorIdx) {
+                    $failedTokens[] = $fcmTokens[$errorIdx];
+                }
+                try {
+                    if (count($failedTokens) > 0) {
+                        UserDeviceTokens::whereIn('registration_id', $failedTokens)->delete();
+                    }
+                } catch (\Exception $e) {
+                    Log::error($e);
+                }
+            }
+            return true;
+        }
+        return false;
     }
 }
