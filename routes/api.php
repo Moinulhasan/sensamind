@@ -66,9 +66,12 @@ $api->version('v1', function (Router $api) {
         Route::post('send-message', [ChatController::class, 'createMessage']);
         Route::get('user-chat-list', [ChatController::class, 'getUserChatList']);
         Route::get('sing-user-message/{id}', [ChatController::class, 'getSingeUserMessage']);
+        Route::get('/search-user', [ChatController::class, 'searchUser']);
     });
 });
 
 
 Route::post('/test-firebase', [ChatController::class, 'index']);
-
+Route::get('/foo', function () {
+    Artisan::call('storage:link');
+});

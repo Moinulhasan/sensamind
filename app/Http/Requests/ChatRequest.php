@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ChatRequest extends FormRequest
 {
@@ -24,9 +25,11 @@ class ChatRequest extends FormRequest
     public function rules()
     {
         return [
-            'receiver_id' => 'required|integer',
+            'receiver_id' => 'required|integer|' . Rule::exists('users', 'id')->where(function ($query) {
+                    $query->where('id', $this->id);
+                }),
             'message' => 'required|string',
-            'attachment'=>'nullable|mimes:jpeg,png,gif,svg,jpg,mp4,mov,ogg,qt|max:100000'
+            'attachment' => 'nullable|mimes:jpeg,png,gif,svg,jpg,mp4,mov,ogg,qt|max:100000'
         ];
     }
 }

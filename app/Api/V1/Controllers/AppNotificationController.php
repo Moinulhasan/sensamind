@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\UserDeviceTokens;
 use Auth;
 use Illuminate\Http\Request;
-use App\Models\User;
+use App\User;
 use Illuminate\Support\Facades\Log;
 use Tymon\JWTAuth\JWTAuth;
 
