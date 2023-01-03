@@ -2,7 +2,7 @@
 
 namespace App\Api\V1\Controllers;
 
-use App\Models\User;
+use App\User;
 use App\Http\Controllers\Controller;
 use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Support\Facades\Password;

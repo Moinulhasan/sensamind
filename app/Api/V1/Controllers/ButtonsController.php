@@ -3,9 +3,9 @@
 namespace App\Api\V1\Controllers;
 
 use App\Api\V1\Requests\SpecificResourceRequest;
-use App\Models\Buttons;
+use App\Buttons;
 use App\Http\Controllers\Controller;
-use App\Models\UserGroups;
+use App\UserGroups;
 
 class ButtonsController extends Controller
 {

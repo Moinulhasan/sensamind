@@ -20,6 +20,8 @@ class messageResource extends JsonResource
             'sender'=>new userResource(User::find($this['sender_id'])),
             'receiver'=>new userResource(User::find($this['receiver_id'])),
             'attachment'=>$this['attachment'],
+            'type'=>$this['type'],
+            'origin_name'=>$this['origin_name'],
             'created_at'=>$this['created_at'],
             'group_id'=>$this['group_id']
         ];
